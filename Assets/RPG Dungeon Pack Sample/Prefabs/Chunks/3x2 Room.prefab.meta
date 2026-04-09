@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 3c0f09f1c25bb0e4e91b76d62293dc09
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 348672
+  packageName: RPG Dungeon Kit DEMO
+  packageVersion: 1.0
+  assetPath: Assets/RPG Dungeon Pack Sample/Prefabs/Chunks/3x2 Room.prefab
+  uploadId: 829346
