@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 941ee354add44a5459b4f5ab1c65636b, type: 3}
+  m_Name: EspadaLonga
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  weaponName: Espada
+  attackDamage: 20
+  attackRate: 1.5
+  attackRange: 1.5
+  swingSound: {fileID: 8300000, guid: 1840fb03f458e9840b177892372282c4, type: 3}
+  hitSound: {fileID: 8300000, guid: 30aa09f4a29eb854099ff5146ed17c2b, type: 3}
