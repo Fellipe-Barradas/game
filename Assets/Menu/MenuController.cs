@@ -3,13 +3,19 @@ using UnityEngine.SceneManagement;
 
 public class MenuController : MonoBehaviour
 {
-
-    void Start()
+    private void Start()
     {
-        Cursor.visible = false;
+        if (GameStateManager.Instance != null)
+        {
+            GameStateManager.Instance.SetState(GameState.InitialScreen);
+            return;
+        }
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 
-    void Update()
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -19,7 +25,12 @@ public class MenuController : MonoBehaviour
 
     public void IrParaJogo()
     {
+        if (GameStateManager.Instance != null)
+        {
+            GameStateManager.Instance.StartGameplay();
+            return;
+        }
+
         SceneManager.LoadScene("MainScene");
     }
-    
 }
