@@ -2,11 +2,12 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
+[RequireComponent(typeof(Animator))]
 public class FireKnightController : MonoBehaviour
 {
-    [Header("Movimenta��o B�sica")]
+    [Header("Movimentação Básica")]
     public float walkSpeed = 5f;
-    public float runSpeed = 8f; // Segure Ctrl Esquerdo para correr
+    public float runSpeed = 8f;
     public float mouseSensitivity = 200f;
 
     [Header("Pulo")]
@@ -21,134 +22,124 @@ public class FireKnightController : MonoBehaviour
     public float dashDuration = 0.25f;
     public float dashCooldown = 1f;
 
-    // GDD: Esquiva (Dash) usa Shift Esq. e deixa invenc�vel durante o per�odo
     public bool isInvincible { get; private set; } = false;
     private bool isDashing = false;
     private float dashTimeCounter;
     private float lastDashTime = -10f;
 
-    // Refer�ncias e Inputs
     private Rigidbody rb;
+    private Animator anim;
     private float rotationY;
     private Vector3 moveDirection;
+    private bool isJumping = false;
+
+    // Trigger para o pulo (auto-reseta) + Bools para movimento
+    private static readonly int HashJumpTrigger = Animator.StringToHash("jumpTrigger");
+    private static readonly int HashIsWalking   = Animator.StringToHash("isWalking");
+    private static readonly int HashIsRunning   = Animator.StringToHash("isRunning");
+    private static readonly int HashSpeed       = Animator.StringToHash("speed");
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        rb   = GetComponent<Rigidbody>();
+        anim = GetComponent<Animator>();
 
-        // Trava o cursor e esconde o mouse
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        Cursor.visible   = false;
 
-        // Configura��es obrigat�rias de F�sica via c�digo para evitar erros no Editor
-        rb.freezeRotation = true;
-        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.freezeRotation        = true;
+        rb.interpolation         = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
     }
 
     void Update()
     {
-        // 1. Rota��o do Personagem (Mouse)
+        // 1. Rotação do Personagem (Mouse)
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         rotationY += mouseX;
         transform.rotation = Quaternion.Euler(0f, rotationY, 0f);
 
-        // 2. Verifica��o de Ch�o (Ground Check)
+        // 2. Ground Check direto — sem wasGrounded, sem delay
         if (groundCheck != null)
-        {
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
-        }
 
-        // 3. Captura de Input de Movimento (W, A, S, D) - GDD
+        // Aterrissou: libera o flag de pulo
+        if (isJumping && isGrounded)
+            isJumping = false;
+
+        // 3. Input de Movimento
         float moveX = Input.GetAxisRaw("Horizontal");
         float moveZ = Input.GetAxisRaw("Vertical");
-        // Pega a direção da câmera mas ignora a inclinação vertical (Y)
-        Vector3 camForward = Camera.main.transform.forward;
-        camForward.y = 0;
-        camForward.Normalize();
 
-        Vector3 camRight = Camera.main.transform.right;
-        camRight.y = 0;
-        camRight.Normalize();
+        Vector3 camForward = Camera.main.transform.forward; camForward.y = 0; camForward.Normalize();
+        Vector3 camRight   = Camera.main.transform.right;   camRight.y   = 0; camRight.Normalize();
 
-        // O movimento agora é baseado na visão da câmera!
         moveDirection = (camForward * moveZ + camRight * moveX).normalized;
 
-        // 4. L�gica de Pulo (Espa�o)
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded && !isDashing)
+        // 4. Animações de movimento
+        float currentSpeed = moveDirection.magnitude * (Input.GetKey(KeyCode.LeftControl) ? runSpeed : walkSpeed);
+        anim.SetFloat(HashSpeed, currentSpeed);
+
+        bool isMoving  = moveDirection.sqrMagnitude > 0.01f;
+        bool isRunning = isMoving && Input.GetKey(KeyCode.LeftControl) && isGrounded && !isJumping;
+        bool isWalking = isMoving && !Input.GetKey(KeyCode.LeftControl) && isGrounded && !isJumping;
+
+        anim.SetBool(HashIsWalking, isWalking);
+        anim.SetBool(HashIsRunning, isRunning);
+
+        // 5. Pulo — usa Trigger em vez de Bool
+        if (Input.GetButtonDown("Jump") && isGrounded && !isDashing)
         {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z); // Zera o Y antes para pulos consistentes
+            isJumping = true;
+            anim.SetTrigger(HashJumpTrigger); // dispara e se auto-reseta
+
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        }
+        }   
 
-        // 5. L�gica de Esquiva/Dash (Shift Esquerdo) - GDD
+        // 6. Dash
         if (Input.GetKeyDown(KeyCode.LeftShift) && Time.time >= lastDashTime + dashCooldown && !isDashing)
-        {
             StartEvasion(dashForce);
-        }
 
-        // 6. L�gica de Rolamento (Alt Esquerdo)
+        // 7. Roll
         if (Input.GetKeyDown(KeyCode.LeftAlt) && isGrounded && Time.time >= lastDashTime + dashCooldown && !isDashing)
-        {
-            // O rolamento compartilha a mesma mec�nica f�sica do Dash, mas pode receber 
-            // uma for�a diferente e ser� o local onde voc� engatilhar� a anima��o de rolar.
-            StartEvasion(dashForce * 0.8f); // Rolar empurra um pouco menos que o Dash
-        }
+            StartEvasion(dashForce * 0.8f);
     }
 
     void FixedUpdate()
     {
-        // Seletor de Estados F�sicos
-        if (isDashing)
-        {
-            HandleEvasion();
-        }
-        else
-        {
-            MovePlayer();
-        }
+        if (isDashing) HandleEvasion();
+        else           MovePlayer();
     }
 
     private void MovePlayer()
     {
-        // Define se est� andando ou correndo (Segurar Ctrl Esq. para correr)
-        float currentSpeed = Input.GetKey(KeyCode.LeftControl) ? runSpeed : walkSpeed;
-
-        // Move o Rigidbody calculando a dire��o e velocidade
+        float currentSpeed     = Input.GetKey(KeyCode.LeftControl) ? runSpeed : walkSpeed;
         Vector3 targetVelocity = moveDirection * currentSpeed;
-
-        // Mant�m a velocidade de queda (eixo Y) intacta para a gravidade funcionar
-        targetVelocity.y = rb.linearVelocity.y;
-
-        rb.linearVelocity = targetVelocity;
+        targetVelocity.y       = rb.linearVelocity.y;
+        rb.linearVelocity      = targetVelocity;
     }
 
     private void StartEvasion(float appliedForce)
     {
-        isDashing = true;
-        isInvincible = true; // Aplica invencibilidade mec�nica baseada no GDD
-        dashTimeCounter = dashDuration;
-        lastDashTime = Time.time;
-
-        // Zera a velocidade atual para a esquiva ter acelera��o instant�nea
+        isDashing        = true;
+        isInvincible     = true;
+        dashTimeCounter  = dashDuration;
+        lastDashTime     = Time.time;
         rb.linearVelocity = Vector3.zero;
 
-        // Calcula a dire��o. Se estiver parado, faz o dash para frente da c�mera.
         Vector3 evasionDirection = moveDirection == Vector3.zero ? transform.forward : moveDirection;
-
         rb.AddForce(evasionDirection * appliedForce, ForceMode.VelocityChange);
     }
 
     private void HandleEvasion()
     {
         dashTimeCounter -= Time.fixedDeltaTime;
-
-        // Termina a Esquiva/Dash
         if (dashTimeCounter <= 0)
         {
-            isDashing = false;
-            isInvincible = false; // Retira invencibilidade
-            rb.linearVelocity = Vector3.zero; // Freia o personagem para n�o deslizar como gelo
+            isDashing         = false;
+            isInvincible      = false;
+            rb.linearVelocity = Vector3.zero;
         }
     }
 }
