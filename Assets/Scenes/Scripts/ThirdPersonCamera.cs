@@ -33,11 +33,16 @@ public class ThirdPersonCamera : MonoBehaviour
         if (target != null)
             currentYaw = target.eulerAngles.y;
 
+        if (cameraPivot != null)
+            currentPitch = cameraPivot.localEulerAngles.x;
+
         currentDistance = defaultDistance;
     }
 
     private void Update()
     {
+        if (cameraPivot == null) return;
+
         GameStateManager stateManager = GameStateManager.Instance;
         if (stateManager == null || stateManager.CanCameraLook)
             ReadMouseInput();
