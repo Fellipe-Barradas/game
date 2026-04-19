@@ -5,13 +5,7 @@ public class MenuController : MonoBehaviour
 {
     private void Start()
     {
-        if (GameStateManager.Instance != null)
-        {
-            GameStateManager.Instance.SetState(GameState.InitialScreen);
-            return;
-        }
-
-        Cursor.visible = true;
+        Cursor.visible = false;
         Cursor.lockState = CursorLockMode.None;
     }
 
@@ -30,7 +24,5 @@ public class MenuController : MonoBehaviour
             GameStateManager.Instance.StartGameplay();
             return;
         }
-
-        SceneManager.LoadScene("MainScene");
     }
 }
