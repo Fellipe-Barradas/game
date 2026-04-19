@@ -37,6 +37,7 @@ public class FireKnightController : MonoBehaviour
     private bool isSprinting;
     private float dashTimeCounter;
     private float lastDashTime = -10f;
+    private bool pendingJump;
 
     private static readonly int HashJumpTrigger = Animator.StringToHash("jumpTrigger");
     private static readonly int HashIsWalking   = Animator.StringToHash("isWalking");
@@ -116,10 +117,8 @@ public class FireKnightController : MonoBehaviour
     {
         if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame && isGrounded && !isDashing)
         {
-            isJumping = true;
+            pendingJump = true;
             anim.SetTrigger(HashJumpTrigger);
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
     }
 
@@ -147,6 +146,14 @@ public class FireKnightController : MonoBehaviour
         {
             rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             return;
+        }
+
+        if (pendingJump)
+        {
+            pendingJump = false;
+            isJumping = true;
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
 
         if (isDashing) HandleEvasion();
