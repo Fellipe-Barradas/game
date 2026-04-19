@@ -26,7 +26,6 @@ public class GameStateManager : MonoBehaviour
     public GameState CurrentState { get; private set; } = GameState.InitialScreen;
 
     public bool IsWorldPaused =>
-        CurrentState == GameState.InitialScreen ||
         CurrentState == GameState.Pause ||
         CurrentState == GameState.GameOver;
 
