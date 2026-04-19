@@ -9,7 +9,7 @@ public class MenuController : MonoBehaviour {
     {
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.None;
-        VoltarParaMenu();
+        IrParaMenuInicial();
     }
 
     private void Update()
@@ -29,15 +29,27 @@ public class MenuController : MonoBehaviour {
         }
     }
 
+    public void IrParaMenuInicial()
+    {
+        menuInicial.SetActive(true);
+        menuOpcoes.SetActive(false);
+    }
+
     public void IrParaOpcoes()
     {
         menuInicial.SetActive(false);
         menuOpcoes.SetActive(true);
     }
 
-    public void VoltarParaMenu()
+    public void salvarConfiguracoesOpcoes()
     {
-        menuInicial.SetActive(true);
-        menuOpcoes.SetActive(false);
+        SceneManager.LoadScene("MenuPrincipal");
     }
+
+    public void SairDoJogo()
+    {
+        Application.Quit();
+    }
+
+
 }
