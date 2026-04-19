@@ -1,12 +1,15 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class MenuController : MonoBehaviour
-{
+public class MenuController : MonoBehaviour {
+
+    public GameObject menuInicial, menuOpcoes;
+
     private void Start()
     {
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.None;
+        VoltarParaMenu();
     }
 
     private void Update()
@@ -24,5 +27,17 @@ public class MenuController : MonoBehaviour
             GameStateManager.Instance.StartGameplay();
             return;
         }
+    }
+
+    public void IrParaOpcoes()
+    {
+        menuInicial.SetActive(false);
+        menuOpcoes.SetActive(true);
+    }
+
+    public void VoltarParaMenu()
+    {
+        menuInicial.SetActive(true);
+        menuOpcoes.SetActive(false);
     }
 }

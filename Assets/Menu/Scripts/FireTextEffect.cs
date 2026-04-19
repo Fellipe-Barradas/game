@@ -18,6 +18,6 @@ public class FireTextEffect : MonoBehaviour
         float t = Mathf.Abs(Mathf.Sin(Time.time * speed));
 
         mat.SetFloat("_GlowPower", Mathf.Lerp(0.3f, 1f, t));
-        mat.SetFloat("_GlowOuter", Mathf.Lerp(0.2f, 0.5f, t));
+        // mat.SetFloat("_GlowOuter", Mathf.Lerp(0.2f, 0.5f, t));
     }
 }
