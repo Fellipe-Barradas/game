@@ -38,6 +38,8 @@ public class FireKnightController : MonoBehaviour
     private float dashTimeCounter;
     private float lastDashTime = -10f;
     private bool pendingJump;
+    private bool pendingDash;
+    private float pendingDashForce;
 
     private static readonly int HashJumpTrigger = Animator.StringToHash("jumpTrigger");
     private static readonly int HashIsWalking   = Animator.StringToHash("isWalking");
@@ -50,13 +52,15 @@ public class FireKnightController : MonoBehaviour
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+        if (cameraRig == null)   Debug.LogError("FireKnightController: cameraRig not assigned.", this);
+        if (cameraPivot == null) Debug.LogError("FireKnightController: cameraPivot not assigned.", this);
+        if (groundCheck == null) Debug.LogWarning("FireKnightController: groundCheck not assigned.", this);
     }
 
     // LateUpdate garante que ThirdPersonCamera.Update() já rodou neste frame
     private void LateUpdate()
     {
-        GroundCheck();
-
         GameStateManager stateManager = GameStateManager.Instance;
         if (stateManager != null && !stateManager.CanPlayerMove)
         {
@@ -66,6 +70,8 @@ public class FireKnightController : MonoBehaviour
             anim.SetBool(HashIsRunning, false);
             return;
         }
+
+        GroundCheck();
 
         var keyboard = Keyboard.current;
         isSprinting = keyboard != null && keyboard.leftCtrlKey.isPressed;
@@ -134,7 +140,7 @@ public class FireKnightController : MonoBehaviour
 
     private void UpdateAnimations()
     {
-        bool moving = moveDirection.sqrMagnitude > 0.01f && isGrounded && !isJumping;
+        bool moving = moveDirection.sqrMagnitude > 0.01f && isGrounded && !isJumping && !isDashing;
         anim.SetBool(HashIsWalking, moving && !isSprinting);
         anim.SetBool(HashIsRunning, moving && isSprinting);
     }
@@ -144,6 +150,8 @@ public class FireKnightController : MonoBehaviour
         GameStateManager stateManager = GameStateManager.Instance;
         if (stateManager != null && !stateManager.CanPlayerMove)
         {
+            pendingJump = false;
+            pendingDash = false;
             rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             return;
         }
@@ -154,6 +162,14 @@ public class FireKnightController : MonoBehaviour
             isJumping = true;
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+
+        if (pendingDash)
+        {
+            pendingDash = false;
+            rb.linearVelocity = Vector3.zero;
+            Vector3 dir = moveDirection.sqrMagnitude > 0.01f ? moveDirection : transform.forward;
+            rb.AddForce(dir * pendingDashForce, ForceMode.VelocityChange);
         }
 
         if (isDashing) HandleEvasion();
@@ -176,10 +192,8 @@ public class FireKnightController : MonoBehaviour
         isInvincible = true;
         dashTimeCounter = dashDuration;
         lastDashTime = Time.time;
-        rb.linearVelocity = Vector3.zero;
-
-        Vector3 dir = moveDirection.sqrMagnitude > 0.01f ? moveDirection : transform.forward;
-        rb.AddForce(dir * force, ForceMode.VelocityChange);
+        pendingDash = true;
+        pendingDashForce = force;
     }
 
     private void HandleEvasion()
@@ -189,7 +203,7 @@ public class FireKnightController : MonoBehaviour
         {
             isDashing = false;
             isInvincible = false;
-            rb.linearVelocity = Vector3.zero;
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
         }
     }
 }
