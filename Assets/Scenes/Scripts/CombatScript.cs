@@ -26,10 +26,12 @@ public class FireKnightCombat : MonoBehaviour
 
     private float nextAttackTime;
     private int currentHealth;
+    private FireKnightController playerController;
 
     private void Start()
     {
         currentHealth = maxHealth;
+        playerController = GetComponent<FireKnightController>();
     }
 
     private void Update()
@@ -127,8 +129,7 @@ public class FireKnightCombat : MonoBehaviour
             return;
         }
 
-        FireKnightController controller = GetComponent<FireKnightController>();
-        if (controller != null && controller.isInvincible)
+        if (playerController != null && playerController.isInvincible)
         {
             Debug.Log("Esquivou do ataque.");
             return;
