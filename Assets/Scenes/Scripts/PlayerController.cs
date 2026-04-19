@@ -6,33 +6,37 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Animator))]
 public class FireKnightController : MonoBehaviour
 {
-    [Header("Movimentação Básica")]
+    [Header("Referências de Câmera")]
+    [SerializeField] private ThirdPersonCamera cameraRig;
+    [SerializeField] private Transform cameraPivot;
+
+    [Header("Movimentação")]
     public float walkSpeed = 5f;
     public float runSpeed = 8f;
-    public float mouseSensitivity = 200f;
+    [SerializeField] private float rotationSpeed = 15f;
 
     [Header("Pulo")]
     public float jumpForce = 6f;
     public Transform groundCheck;
     public float groundDistance = 0.3f;
     public LayerMask groundMask;
-    private bool isGrounded;
 
-    [Header("Esquiva (Dash / Roll)")]
+    [Header("Esquiva")]
     public float dashForce = 15f;
     public float dashDuration = 0.25f;
     public float dashCooldown = 1f;
 
-    public bool isInvincible { get; private set; } = false;
-    private bool isDashing = false;
-    private float dashTimeCounter;
-    private float lastDashTime = -10f;
+    public bool isInvincible { get; private set; }
 
     private Rigidbody rb;
     private Animator anim;
-    private float rotationY;
     private Vector3 moveDirection;
-    private bool isJumping = false;
+    private bool isGrounded;
+    private bool isJumping;
+    private bool isDashing;
+    private bool isSprinting;
+    private float dashTimeCounter;
+    private float lastDashTime = -10f;
 
     private static readonly int HashJumpTrigger = Animator.StringToHash("jumpTrigger");
     private static readonly int HashIsWalking   = Animator.StringToHash("isWalking");
@@ -40,68 +44,76 @@ public class FireKnightController : MonoBehaviour
 
     private void Start()
     {
-        rb   = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible   = false;
-
-        rb.freezeRotation         = true;
-        rb.interpolation          = RigidbodyInterpolation.Interpolate;
+        rb.freezeRotation = true;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
     }
 
-    private void Update()
+    // LateUpdate garante que ThirdPersonCamera.Update() já rodou neste frame
+    private void LateUpdate()
     {
-        var keyboard = Keyboard.current;
-        var mouse    = Mouse.current;
-
-        // 1. Rotação do Personagem (Mouse)
-        float mouseX = mouse != null ? mouse.delta.x.ReadValue() * mouseSensitivity * Time.deltaTime : 0f;
-        rotationY += mouseX;
-        transform.rotation = Quaternion.Euler(0f, rotationY, 0f);
-
-        // 2. Ground Check
-        if (groundCheck != null)
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        GroundCheck();
 
         GameStateManager stateManager = GameStateManager.Instance;
         if (stateManager != null && !stateManager.CanPlayerMove)
         {
             moveDirection = Vector3.zero;
+            isSprinting = false;
+            anim.SetBool(HashIsWalking, false);
+            anim.SetBool(HashIsRunning, false);
             return;
         }
 
+        var keyboard = Keyboard.current;
+        isSprinting = keyboard != null && keyboard.leftCtrlKey.isPressed;
+
+        ReadMovementInput(keyboard);
+        ApplyYawRotation();
+        HandleJump(keyboard);
+        HandleDash(keyboard);
+        UpdateAnimations();
+    }
+
+    private void GroundCheck()
+    {
+        if (groundCheck != null)
+            isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
         if (isJumping && isGrounded)
             isJumping = false;
+    }
 
-        // 3. Input de Movimento
-        float moveX = 0f;
-        float moveZ = 0f;
-        if (keyboard != null)
-        {
-            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)  moveX -= 1f;
-            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) moveX += 1f;
-            if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed)  moveZ -= 1f;
-            if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed)    moveZ += 1f;
-        }
+    private void ReadMovementInput(Keyboard keyboard)
+    {
+        if (keyboard == null || cameraPivot == null) { moveDirection = Vector3.zero; return; }
 
-        Vector3 camForward = Camera.main.transform.forward; camForward.y = 0; camForward.Normalize();
-        Vector3 camRight   = Camera.main.transform.right;   camRight.y   = 0; camRight.Normalize();
+        float moveX = 0f, moveZ = 0f;
+        if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)  moveX -= 1f;
+        if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) moveX += 1f;
+        if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed)  moveZ -= 1f;
+        if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed)    moveZ += 1f;
 
-        moveDirection = (camForward * moveZ + camRight * moveX).normalized;
+        // Zerar Y e normalizar para evitar movimento inclinado
+        Vector3 forward = cameraPivot.forward; forward.y = 0f; forward.Normalize();
+        Vector3 right   = cameraPivot.right;   right.y   = 0f; right.Normalize();
+        moveDirection = (forward * moveZ + right * moveX).normalized;
+    }
 
-        // 4. Animações de movimento
-        bool isRunKey = keyboard != null && keyboard.leftCtrlKey.isPressed;
+    private void ApplyYawRotation()
+    {
+        if (cameraRig == null) return;
 
-        bool isMoving  = moveDirection.sqrMagnitude > 0.01f;
-        bool isRunning = isMoving && isRunKey && isGrounded && !isJumping;
-        bool isWalking = isMoving && !isRunKey && isGrounded && !isJumping;
+        // Estilo shooter: player sempre alinhado com a câmera
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
+            cameraRig.YawRotation,
+            rotationSpeed * Time.deltaTime
+        );
+    }
 
-        anim.SetBool(HashIsWalking, isWalking);
-        anim.SetBool(HashIsRunning, isRunning);
-
-        // 5. Pulo
+    private void HandleJump(Keyboard keyboard)
+    {
         if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame && isGrounded && !isDashing)
         {
             isJumping = true;
@@ -109,14 +121,23 @@ public class FireKnightController : MonoBehaviour
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
+    }
 
-        // 6. Dash
-        if (keyboard != null && keyboard.leftShiftKey.wasPressedThisFrame && Time.time >= lastDashTime + dashCooldown && !isDashing)
+    private void HandleDash(Keyboard keyboard)
+    {
+        if (keyboard == null) return;
+        bool cooldownReady = Time.time >= lastDashTime + dashCooldown && !isDashing;
+        if (keyboard.leftShiftKey.wasPressedThisFrame && cooldownReady)
             StartEvasion(dashForce);
-
-        // 7. Roll
-        if (keyboard != null && keyboard.leftAltKey.wasPressedThisFrame && isGrounded && Time.time >= lastDashTime + dashCooldown && !isDashing)
+        if (keyboard.leftAltKey.wasPressedThisFrame && isGrounded && cooldownReady)
             StartEvasion(dashForce * 0.8f);
+    }
+
+    private void UpdateAnimations()
+    {
+        bool moving = moveDirection.sqrMagnitude > 0.01f && isGrounded && !isJumping;
+        anim.SetBool(HashIsWalking, moving && !isSprinting);
+        anim.SetBool(HashIsRunning, moving && isSprinting);
     }
 
     private void FixedUpdate()
@@ -134,23 +155,24 @@ public class FireKnightController : MonoBehaviour
 
     private void MovePlayer()
     {
-        var keyboard = Keyboard.current;
-        float currentSpeed     = (keyboard != null && keyboard.leftCtrlKey.isPressed) ? runSpeed : walkSpeed;
-        Vector3 targetVelocity = moveDirection * currentSpeed;
-        targetVelocity.y       = rb.linearVelocity.y;
-        rb.linearVelocity      = targetVelocity;
+        float speed = isSprinting ? runSpeed : walkSpeed;
+        rb.linearVelocity = new Vector3(
+            moveDirection.x * speed,
+            rb.linearVelocity.y,
+            moveDirection.z * speed
+        );
     }
 
-    private void StartEvasion(float appliedForce)
+    private void StartEvasion(float force)
     {
-        isDashing        = true;
-        isInvincible     = true;
-        dashTimeCounter  = dashDuration;
-        lastDashTime     = Time.time;
+        isDashing = true;
+        isInvincible = true;
+        dashTimeCounter = dashDuration;
+        lastDashTime = Time.time;
         rb.linearVelocity = Vector3.zero;
 
-        Vector3 evasionDirection = moveDirection == Vector3.zero ? transform.forward : moveDirection;
-        rb.AddForce(evasionDirection * appliedForce, ForceMode.VelocityChange);
+        Vector3 dir = moveDirection.sqrMagnitude > 0.01f ? moveDirection : transform.forward;
+        rb.AddForce(dir * force, ForceMode.VelocityChange);
     }
 
     private void HandleEvasion()
@@ -158,8 +180,8 @@ public class FireKnightController : MonoBehaviour
         dashTimeCounter -= Time.fixedDeltaTime;
         if (dashTimeCounter <= 0f)
         {
-            isDashing         = false;
-            isInvincible      = false;
+            isDashing = false;
+            isInvincible = false;
             rb.linearVelocity = Vector3.zero;
         }
     }
