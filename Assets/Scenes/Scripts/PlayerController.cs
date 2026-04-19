@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
@@ -33,11 +34,9 @@ public class FireKnightController : MonoBehaviour
     private Vector3 moveDirection;
     private bool isJumping = false;
 
-    // Trigger para o pulo (auto-reseta) + Bools para movimento
     private static readonly int HashJumpTrigger = Animator.StringToHash("jumpTrigger");
     private static readonly int HashIsWalking   = Animator.StringToHash("isWalking");
     private static readonly int HashIsRunning   = Animator.StringToHash("isRunning");
-    private static readonly int HashSpeed       = Animator.StringToHash("speed");
 
     private void Start()
     {
@@ -54,12 +53,15 @@ public class FireKnightController : MonoBehaviour
 
     private void Update()
     {
+        var keyboard = Keyboard.current;
+        var mouse    = Mouse.current;
+
         // 1. Rotação do Personagem (Mouse)
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseX = mouse != null ? mouse.delta.x.ReadValue() * mouseSensitivity * Time.deltaTime : 0f;
         rotationY += mouseX;
         transform.rotation = Quaternion.Euler(0f, rotationY, 0f);
 
-        // 2. Ground Check direto — sem wasGrounded, sem delay
+        // 2. Ground Check
         if (groundCheck != null)
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
@@ -70,13 +72,19 @@ public class FireKnightController : MonoBehaviour
             return;
         }
 
-        // Aterrissou: libera o flag de pulo
         if (isJumping && isGrounded)
             isJumping = false;
 
         // 3. Input de Movimento
-        float moveX = Input.GetAxisRaw("Horizontal");
-        float moveZ = Input.GetAxisRaw("Vertical");
+        float moveX = 0f;
+        float moveZ = 0f;
+        if (keyboard != null)
+        {
+            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)  moveX -= 1f;
+            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) moveX += 1f;
+            if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed)  moveZ -= 1f;
+            if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed)    moveZ += 1f;
+        }
 
         Vector3 camForward = Camera.main.transform.forward; camForward.y = 0; camForward.Normalize();
         Vector3 camRight   = Camera.main.transform.right;   camRight.y   = 0; camRight.Normalize();
@@ -84,18 +92,17 @@ public class FireKnightController : MonoBehaviour
         moveDirection = (camForward * moveZ + camRight * moveX).normalized;
 
         // 4. Animações de movimento
-        float currentSpeed = moveDirection.magnitude * (Input.GetKey(KeyCode.LeftControl) ? runSpeed : walkSpeed);
-        anim.SetFloat(HashSpeed, currentSpeed);
+        bool isRunKey = keyboard != null && keyboard.leftCtrlKey.isPressed;
 
         bool isMoving  = moveDirection.sqrMagnitude > 0.01f;
-        bool isRunning = isMoving && Input.GetKey(KeyCode.LeftControl) && isGrounded && !isJumping;
-        bool isWalking = isMoving && !Input.GetKey(KeyCode.LeftControl) && isGrounded && !isJumping;
+        bool isRunning = isMoving && isRunKey && isGrounded && !isJumping;
+        bool isWalking = isMoving && !isRunKey && isGrounded && !isJumping;
 
         anim.SetBool(HashIsWalking, isWalking);
         anim.SetBool(HashIsRunning, isRunning);
 
-        // 5. Pulo — usa Trigger em vez de Bool
-        if (Input.GetButtonDown("Jump") && isGrounded && !isDashing)
+        // 5. Pulo
+        if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame && isGrounded && !isDashing)
         {
             isJumping = true;
             anim.SetTrigger(HashJumpTrigger);
@@ -104,11 +111,11 @@ public class FireKnightController : MonoBehaviour
         }
 
         // 6. Dash
-        if (Input.GetKeyDown(KeyCode.LeftShift) && Time.time >= lastDashTime + dashCooldown && !isDashing)
+        if (keyboard != null && keyboard.leftShiftKey.wasPressedThisFrame && Time.time >= lastDashTime + dashCooldown && !isDashing)
             StartEvasion(dashForce);
 
         // 7. Roll
-        if (Input.GetKeyDown(KeyCode.LeftAlt) && isGrounded && Time.time >= lastDashTime + dashCooldown && !isDashing)
+        if (keyboard != null && keyboard.leftAltKey.wasPressedThisFrame && isGrounded && Time.time >= lastDashTime + dashCooldown && !isDashing)
             StartEvasion(dashForce * 0.8f);
     }
 
@@ -127,7 +134,8 @@ public class FireKnightController : MonoBehaviour
 
     private void MovePlayer()
     {
-        float currentSpeed     = Input.GetKey(KeyCode.LeftControl) ? runSpeed : walkSpeed;
+        var keyboard = Keyboard.current;
+        float currentSpeed     = (keyboard != null && keyboard.leftCtrlKey.isPressed) ? runSpeed : walkSpeed;
         Vector3 targetVelocity = moveDirection * currentSpeed;
         targetVelocity.y       = rb.linearVelocity.y;
         rb.linearVelocity      = targetVelocity;

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class FireKnightCombat : MonoBehaviour
 {
@@ -51,7 +52,9 @@ public class FireKnightCombat : MonoBehaviour
             return;
         }
 
-        if (Input.GetMouseButton(1))
+        var mouse = Mouse.current;
+
+        if (mouse != null && mouse.rightButton.isPressed)
         {
             isBlocking = true;
 
@@ -69,7 +72,7 @@ public class FireKnightCombat : MonoBehaviour
                 animator.SetBool("IsBlocking", false);
             }
 
-            if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime)
+            if (mouse != null && mouse.leftButton.wasPressedThisFrame && Time.time >= nextAttackTime)
             {
                 Attack();
                 nextAttackTime = Time.time + 1f / currentWeapon.attackRate;

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ThirdPersonCamera : MonoBehaviour
 {
@@ -39,8 +40,12 @@ public class ThirdPersonCamera : MonoBehaviour
         GameStateManager stateManager = GameStateManager.Instance;
         if (stateManager == null || stateManager.CanCameraLook)
         {
-            currentYaw += Input.GetAxis("Mouse X") * mouseSensitivity;
-            currentPitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
+            var mouse = Mouse.current;
+            if (mouse != null)
+            {
+                currentYaw   += mouse.delta.x.ReadValue() * mouseSensitivity * Time.deltaTime;
+                currentPitch -= mouse.delta.y.ReadValue() * mouseSensitivity * Time.deltaTime;
+            }
             currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
         }
 

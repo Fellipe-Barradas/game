@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public enum GameState
 {
@@ -19,9 +20,9 @@ public class GameStateManager : MonoBehaviour
     [SerializeField] private string gameplaySceneName = "MainScene";
 
     [Header("Hotkeys")]
-    [SerializeField] private KeyCode pauseKey = KeyCode.Escape;
-    [SerializeField] private KeyCode inventoryKey = KeyCode.I;
-    [SerializeField] private KeyCode craftingKey = KeyCode.C;
+    [SerializeField] private Key pauseKey = Key.Escape;
+    [SerializeField] private Key inventoryKey = Key.I;
+    [SerializeField] private Key craftingKey = Key.C;
 
     public GameState CurrentState { get; private set; } = GameState.InitialScreen;
 
@@ -75,7 +76,10 @@ public class GameStateManager : MonoBehaviour
             return;
         }
 
-        if (CurrentState != GameState.GameOver && Input.GetKeyDown(pauseKey))
+        var keyboard = Keyboard.current;
+        if (keyboard == null) return;
+
+        if (CurrentState != GameState.GameOver && keyboard[pauseKey].wasPressedThisFrame)
         {
             if (CurrentState == GameState.Playing)
             {
@@ -91,7 +95,7 @@ public class GameStateManager : MonoBehaviour
         }
 
         if ((CurrentState == GameState.Playing || CurrentState == GameState.InventoryCrafting) &&
-            (Input.GetKeyDown(inventoryKey) || Input.GetKeyDown(craftingKey)))
+            (keyboard[inventoryKey].wasPressedThisFrame || keyboard[craftingKey].wasPressedThisFrame))
         {
             SetState(CurrentState == GameState.Playing ? GameState.InventoryCrafting : GameState.Playing);
         }

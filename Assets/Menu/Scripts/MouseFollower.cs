@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class MouseFollower : MonoBehaviour
 {
@@ -7,7 +8,9 @@ public class MouseFollower : MonoBehaviour
 
     void Update()
     {
-        Vector3 mousePos = Input.mousePosition;
+        Vector3 mousePos = Mouse.current != null
+            ? new Vector3(Mouse.current.position.x.ReadValue(), Mouse.current.position.y.ReadValue(), 0f)
+            : Vector3.zero;
 
         mousePos.z = distanceFromCamera;
 
