@@ -1,67 +1,89 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ThirdPersonCamera : MonoBehaviour
 {
-    [Header("Alvo")]
-    public Transform target;
+    [Header("Referências")]
+    [SerializeField] private Transform target;
+    [SerializeField] private Transform cameraPivot;
 
-    [Header("Configuracoes de Distancia")]
-    public Vector3 offset = new Vector3(0f, 2f, -5f);
-    public float smoothSpeed = 10f;
+    [Header("Sensibilidade do Mouse")]
+    [SerializeField] private float mouseSensitivity = 0.08f;
 
-    [Header("Rotacao e Limites")]
-    public float mouseSensitivity = 3f;
-    public float minPitch = -20f;
-    public float maxPitch = 45f;
+    [Header("Limites de Pitch")]
+    [SerializeField] private float minPitch = -80f;
+    [SerializeField] private float maxPitch = 80f;
 
-    [Header("Colisao da Camera")]
-    public LayerMask collisionLayers;
-    public float cameraRadius = 0.2f;
+    [Header("Colisão da Câmera")]
+    [SerializeField] private LayerMask collisionLayers;
+    [SerializeField] private float cameraRadius = 0.2f;
+    [SerializeField] private float defaultDistance = 5f;
+    [SerializeField] private float collisionSmoothSpeed = 10f;
 
     private float currentYaw;
     private float currentPitch;
+    private float currentDistance;
+
+    // Consumido por FireKnightController no LateUpdate
+    public Quaternion YawRotation => Quaternion.Euler(0f, currentYaw, 0f);
+    public float CurrentYaw => currentYaw;
+
+    public const string SENSITIVITY_KEY = "MouseSensitivity";
 
     private void Start()
     {
         if (target != null)
-        {
             currentYaw = target.eulerAngles.y;
-        }
+
+        if (cameraPivot != null)
+            currentPitch = cameraPivot.localEulerAngles.x;
+
+        currentDistance = defaultDistance;
+        mouseSensitivity = PlayerPrefs.GetFloat(SENSITIVITY_KEY, mouseSensitivity);
     }
 
-    private void LateUpdate()
+    public void SetSensitivity(float value)
     {
-        if (!target)
-        {
-            return;
-        }
+        mouseSensitivity = value;
+    }
+
+    private void Update()
+    {
+        if (cameraPivot == null) return;
 
         GameStateManager stateManager = GameStateManager.Instance;
         if (stateManager == null || stateManager.CanCameraLook)
-        {
-            currentYaw += Input.GetAxis("Mouse X") * mouseSensitivity;
-            currentPitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
-            currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
-        }
+            ReadMouseInput();
 
-        Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
-        Vector3 desiredPosition = target.position + rotation * offset;
-        desiredPosition = HandleCameraCollision(target.position + Vector3.up * offset.y, desiredPosition);
-
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
-        transform.LookAt(target.position + Vector3.up * offset.y);
+        cameraPivot.localRotation = Quaternion.Euler(currentPitch, 0f, 0f);
+        HandleCameraCollision();
     }
 
-    private Vector3 HandleCameraCollision(Vector3 targetCenter, Vector3 desiredPos)
+    private void ReadMouseInput()
     {
-        Vector3 direction = desiredPos - targetCenter;
-        float distance = direction.magnitude;
+        var mouse = Mouse.current;
+        if (mouse == null) return;
 
-        if (Physics.SphereCast(targetCenter, cameraRadius, direction.normalized, out RaycastHit hit, distance, collisionLayers))
-        {
-            return targetCenter + direction.normalized * (hit.distance - 0.1f);
-        }
+        // mouse.delta já é por frame — sem Time.deltaTime para manter FPS-independente
+        currentYaw   += mouse.delta.x.ReadValue() * mouseSensitivity;
+        currentPitch -= mouse.delta.y.ReadValue() * mouseSensitivity;
+        currentPitch  = Mathf.Clamp(currentPitch, minPitch, maxPitch);
+    }
 
-        return desiredPos;
+    private void HandleCameraCollision()
+    {
+        float targetDistance = defaultDistance;
+
+        if (Physics.SphereCast(cameraPivot.position, cameraRadius, -cameraPivot.forward,
+                out RaycastHit hit, defaultDistance, collisionLayers))
+            targetDistance = Mathf.Max(hit.distance - 0.1f, 0.5f);
+
+        currentDistance = Mathf.Lerp(currentDistance, targetDistance, collisionSmoothSpeed * Time.deltaTime);
+
+        // Posiciona câmera ao longo do eixo local -Z do CameraPivot
+        transform.localPosition = new Vector3(0f, 0f, -currentDistance);
+
+        // Câmera olha para o pivot independentemente do pitch herdado
+        transform.LookAt(cameraPivot.position);
     }
 }
