@@ -8,7 +8,7 @@ public class ThirdPersonCamera : MonoBehaviour
     [SerializeField] private Transform cameraPivot;
 
     [Header("Sensibilidade do Mouse")]
-    [SerializeField] private float mouseSensitivity = 0.2f;
+    [SerializeField] private float mouseSensitivity = 0.08f;
 
     [Header("Limites de Pitch")]
     [SerializeField] private float minPitch = -80f;
@@ -28,6 +28,8 @@ public class ThirdPersonCamera : MonoBehaviour
     public Quaternion YawRotation => Quaternion.Euler(0f, currentYaw, 0f);
     public float CurrentYaw => currentYaw;
 
+    public const string SENSITIVITY_KEY = "MouseSensitivity";
+
     private void Start()
     {
         if (target != null)
@@ -37,6 +39,12 @@ public class ThirdPersonCamera : MonoBehaviour
             currentPitch = cameraPivot.localEulerAngles.x;
 
         currentDistance = defaultDistance;
+        mouseSensitivity = PlayerPrefs.GetFloat(SENSITIVITY_KEY, mouseSensitivity);
+    }
+
+    public void SetSensitivity(float value)
+    {
+        mouseSensitivity = value;
     }
 
     private void Update()
