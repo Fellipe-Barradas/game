@@ -14,6 +14,7 @@ public class PlayerHealth : MonoBehaviour
 
     void Start()
     {
+        Debug.Log(">>> O SCRIPT DE VIDA FOI INICIADO NO PLAYER! <<<");
         currentHealth = maxHealth;
 
         // Busca automaticamente todos os renderers nos objetos filhos (Bags, Boots, etc)

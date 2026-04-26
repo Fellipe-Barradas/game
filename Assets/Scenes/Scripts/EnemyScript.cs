@@ -86,6 +86,7 @@ public class EnemyDummy : MonoBehaviour
         else
         {
             Debug.LogError("ERRO: O Inimigo te tocou, mas não achou o script PlayerHealth no seu Player!");
+
         }
             StartCoroutine(AttackSequence());
         }
