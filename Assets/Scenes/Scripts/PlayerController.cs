@@ -40,10 +40,20 @@ public class FireKnightController : MonoBehaviour
     private bool pendingJump;
     private bool pendingDash;
     private float pendingDashForce;
+    private float jumpGraceTimer = 0f;
+    private float jumpGraceDuration = 0.15f;
 
-    private static readonly int HashJumpTrigger = Animator.StringToHash("jumpTrigger");
+    private float rawMoveX;
+    private float rawMoveZ;
+
+    private static readonly int HashIsJumping   = Animator.StringToHash("isJumping");
+    private static readonly int HashIsGrounded  = Animator.StringToHash("isGrounded");
     private static readonly int HashIsWalking   = Animator.StringToHash("isWalking");
     private static readonly int HashIsRunning   = Animator.StringToHash("isRunning");
+    private static readonly int HashMoveX       = Animator.StringToHash("moveX");
+    private static readonly int HashMoveZ       = Animator.StringToHash("moveZ");
+    private static readonly int HashIsDashing   = Animator.StringToHash("isDashing");
+    private static readonly int HashAtaqueEspada = Animator.StringToHash("ataque_espada");
 
     private void Start()
     {
@@ -58,16 +68,19 @@ public class FireKnightController : MonoBehaviour
         if (groundCheck == null) Debug.LogWarning("FireKnightController: groundCheck not assigned.", this);
     }
 
-    // LateUpdate garante que ThirdPersonCamera.Update() já rodou neste frame
     private void LateUpdate()
     {
         GameStateManager stateManager = GameStateManager.Instance;
         if (stateManager != null && !stateManager.CanPlayerMove)
         {
             moveDirection = Vector3.zero;
+            rawMoveX = 0f;
+            rawMoveZ = 0f;
             isSprinting = false;
             anim.SetBool(HashIsWalking, false);
             anim.SetBool(HashIsRunning, false);
+            anim.SetFloat(HashMoveX, 0f);
+            anim.SetFloat(HashMoveZ, 0f);
             return;
         }
 
@@ -80,38 +93,58 @@ public class FireKnightController : MonoBehaviour
         ApplyYawRotation();
         HandleJump(keyboard);
         HandleDash(keyboard);
+        HandleAttack();       // <-- sem parâmetro de teclado, usa o mouse
         UpdateAnimations();
     }
 
     private void GroundCheck()
     {
+        if (jumpGraceTimer > 0f)
+        {
+            jumpGraceTimer -= Time.deltaTime;
+            isGrounded = false;
+            anim.SetBool(HashIsGrounded, false);
+            return;
+        }
+
         if (groundCheck != null)
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+
+        anim.SetBool(HashIsGrounded, isGrounded);
+
         if (isJumping && isGrounded)
+        {
             isJumping = false;
+            anim.SetBool(HashIsJumping, false);
+        }
     }
 
     private void ReadMovementInput(Keyboard keyboard)
     {
-        if (keyboard == null || cameraPivot == null) { moveDirection = Vector3.zero; return; }
+        if (keyboard == null || cameraPivot == null)
+        {
+            moveDirection = Vector3.zero;
+            rawMoveX = 0f;
+            rawMoveZ = 0f;
+            return;
+        }
 
-        float moveX = 0f, moveZ = 0f;
-        if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)  moveX -= 1f;
-        if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) moveX += 1f;
-        if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed)  moveZ -= 1f;
-        if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed)    moveZ += 1f;
+        rawMoveX = 0f;
+        rawMoveZ = 0f;
 
-        // Zerar Y e normalizar para evitar movimento inclinado
+        if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)  rawMoveX -= 1f;
+        if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) rawMoveX += 1f;
+        if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed)  rawMoveZ -= 1f;
+        if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed)    rawMoveZ += 1f;
+
         Vector3 forward = cameraPivot.forward; forward.y = 0f; forward.Normalize();
         Vector3 right   = cameraPivot.right;   right.y   = 0f; right.Normalize();
-        moveDirection = (forward * moveZ + right * moveX).normalized;
+        moveDirection = (forward * rawMoveZ + right * rawMoveX).normalized;
     }
 
     private void ApplyYawRotation()
     {
         if (cameraRig == null) return;
-
-        // Estilo shooter: player sempre alinhado com a câmera
         transform.rotation = Quaternion.Slerp(
             transform.rotation,
             cameraRig.YawRotation,
@@ -124,7 +157,10 @@ public class FireKnightController : MonoBehaviour
         if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame && isGrounded && !isDashing)
         {
             pendingJump = true;
-            anim.SetTrigger(HashJumpTrigger);
+            isJumping = true;
+            jumpGraceTimer = jumpGraceDuration;
+            anim.SetBool(HashIsJumping, true);
+            anim.SetBool(HashIsGrounded, false);
         }
     }
 
@@ -138,11 +174,27 @@ public class FireKnightController : MonoBehaviour
             StartEvasion(dashForce * 0.8f);
     }
 
+    private void HandleAttack()
+    {
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            anim.SetTrigger(HashAtaqueEspada);
+        }
+    }
+
     private void UpdateAnimations()
     {
         bool moving = moveDirection.sqrMagnitude > 0.01f && isGrounded && !isJumping && !isDashing;
+
         anim.SetBool(HashIsWalking, moving && !isSprinting);
         anim.SetBool(HashIsRunning, moving && isSprinting);
+
+        float speedMult = isSprinting ? 2f : 1f;
+        float targetX = moving ? rawMoveX * speedMult : 0f;
+        float targetZ = moving ? rawMoveZ * speedMult : 0f;
+
+        anim.SetFloat(HashMoveX, Mathf.Lerp(anim.GetFloat(HashMoveX), targetX, Time.deltaTime * 12f));
+        anim.SetFloat(HashMoveZ, Mathf.Lerp(anim.GetFloat(HashMoveZ), targetZ, Time.deltaTime * 12f));
     }
 
     private void FixedUpdate()
@@ -194,6 +246,7 @@ public class FireKnightController : MonoBehaviour
         lastDashTime = Time.time;
         pendingDash = true;
         pendingDashForce = force;
+        anim.SetBool(HashIsDashing, true);
     }
 
     private void HandleEvasion()
@@ -204,6 +257,7 @@ public class FireKnightController : MonoBehaviour
             isDashing = false;
             isInvincible = false;
             rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+            anim.SetBool(HashIsDashing, false);
         }
     }
 }
