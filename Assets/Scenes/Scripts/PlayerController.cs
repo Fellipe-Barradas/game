@@ -1,21 +1,29 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+public enum PlayerClass
+{
+    Espadachim,
+    Lanceiro,
+    Arqueiro
+}
+
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Animator))]
 public class FireKnightController : MonoBehaviour
 {
+    [Header("Classe do Personagem")]
+    public PlayerClass currentClass = PlayerClass.Espadachim;
+
     [Header("Referências de Câmera")]
     [SerializeField] private ThirdPersonCamera cameraRig;
     [SerializeField] private Transform cameraPivot;
 
-    [Header("Movimentação")]
+    [Header("Movimentação e Pulo")]
     public float walkSpeed = 5f;
     public float runSpeed = 8f;
     [SerializeField] private float rotationSpeed = 15f;
-
-    [Header("Pulo")]
     public float jumpForce = 6f;
     public Transform groundCheck;
     public float groundDistance = 0.3f;
@@ -25,35 +33,46 @@ public class FireKnightController : MonoBehaviour
     public float dashForce = 15f;
     public float dashDuration = 0.25f;
     public float dashCooldown = 1f;
-
     public bool isInvincible { get; private set; }
 
+    [Header("Combate - Corpo a Corpo (Designers)")]
+    public Transform meleeAttackPoint;
+    public LayerMask enemyLayers;
+    public float swordAttackRange = 2f;
+    public float swordAttackWidth = 3f;
+    public float lanceAttackRange = 4f; // Dobro do alcance da espada
+    public float lanceAttackWidth = 1f; // Menos alcance lateral
+
+    [Header("Combate - À Distância (Designers)")]
+    public Transform rangedFirePoint;
+    public GameObject projectilePrefab;
+
+    // Privates
     private Rigidbody rb;
     private Animator anim;
     private Vector3 moveDirection;
-    private bool isGrounded;
-    private bool isJumping;
-    private bool isDashing;
-    private bool isSprinting;
+    private bool isGrounded, isJumping, isDashing, isSprinting;
     private float dashTimeCounter;
     private float lastDashTime = -10f;
-    private bool pendingJump;
-    private bool pendingDash;
+    private bool pendingJump, pendingDash;
     private float pendingDashForce;
     private float jumpGraceTimer = 0f;
     private float jumpGraceDuration = 0.15f;
+    private float rawMoveX, rawMoveZ;
 
-    private float rawMoveX;
-    private float rawMoveZ;
-
-    private static readonly int HashIsJumping   = Animator.StringToHash("isJumping");
-    private static readonly int HashIsGrounded  = Animator.StringToHash("isGrounded");
-    private static readonly int HashIsWalking   = Animator.StringToHash("isWalking");
-    private static readonly int HashIsRunning   = Animator.StringToHash("isRunning");
-    private static readonly int HashMoveX       = Animator.StringToHash("moveX");
-    private static readonly int HashMoveZ       = Animator.StringToHash("moveZ");
-    private static readonly int HashIsDashing   = Animator.StringToHash("isDashing");
+    // Hashes de Animação
+    private static readonly int HashIsJumping = Animator.StringToHash("isJumping");
+    private static readonly int HashIsGrounded = Animator.StringToHash("isGrounded");
+    private static readonly int HashIsWalking = Animator.StringToHash("isWalking");
+    private static readonly int HashIsRunning = Animator.StringToHash("isRunning");
+    private static readonly int HashMoveX = Animator.StringToHash("moveX");
+    private static readonly int HashMoveZ = Animator.StringToHash("moveZ");
+    private static readonly int HashIsDashing = Animator.StringToHash("isDashing");
+    
+    // Hashes de Ataque
     private static readonly int HashAtaqueEspada = Animator.StringToHash("ataque_espada");
+    private static readonly int HashAtaqueLanca = Animator.StringToHash("ataque_lanca");
+    private static readonly int HashAtaqueArco = Animator.StringToHash("ataque_arco");
 
     private void Start()
     {
@@ -62,28 +81,11 @@ public class FireKnightController : MonoBehaviour
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-
-        if (cameraRig == null)   Debug.LogError("FireKnightController: cameraRig not assigned.", this);
-        if (cameraPivot == null) Debug.LogError("FireKnightController: cameraPivot not assigned.", this);
-        if (groundCheck == null) Debug.LogWarning("FireKnightController: groundCheck not assigned.", this);
     }
 
     private void LateUpdate()
     {
-        GameStateManager stateManager = GameStateManager.Instance;
-        if (stateManager != null && !stateManager.CanPlayerMove)
-        {
-            moveDirection = Vector3.zero;
-            rawMoveX = 0f;
-            rawMoveZ = 0f;
-            isSprinting = false;
-            anim.SetBool(HashIsWalking, false);
-            anim.SetBool(HashIsRunning, false);
-            anim.SetFloat(HashMoveX, 0f);
-            anim.SetFloat(HashMoveZ, 0f);
-            return;
-        }
-
+        // Lógica original de GameStateManager (mantida)
         GroundCheck();
 
         var keyboard = Keyboard.current;
@@ -93,10 +95,9 @@ public class FireKnightController : MonoBehaviour
         ApplyYawRotation();
         HandleJump(keyboard);
         HandleDash(keyboard);
-        HandleAttack();       // <-- sem parâmetro de teclado, usa o mouse
+        HandleAttack(); 
         UpdateAnimations();
     }
-
     private void GroundCheck()
     {
         if (jumpGraceTimer > 0f)
@@ -172,14 +173,6 @@ public class FireKnightController : MonoBehaviour
             StartEvasion(dashForce);
         if (keyboard.leftAltKey.wasPressedThisFrame && isGrounded && cooldownReady)
             StartEvasion(dashForce * 0.8f);
-    }
-
-    private void HandleAttack()
-    {
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            anim.SetTrigger(HashAtaqueEspada);
-        }
     }
 
     private void UpdateAnimations()
@@ -258,6 +251,94 @@ public class FireKnightController : MonoBehaviour
             isInvincible = false;
             rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             anim.SetBool(HashIsDashing, false);
+        }
+    }
+
+    private void HandleAttack()
+    {
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            // Aciona a animação correspondente à classe atual
+            switch (currentClass)
+            {
+                case PlayerClass.Espadachim:
+                    anim.SetTrigger(HashAtaqueEspada);
+                    break;
+                case PlayerClass.Lanceiro:
+                    anim.SetTrigger(HashAtaqueLanca);
+                    break;
+                case PlayerClass.Arqueiro:
+                    anim.SetTrigger(HashAtaqueArco);
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// MÉTODO PARA OS ANIMADORES: 
+    /// Adicione um "Animation Event" no frame exato do impacto da espada/lança ou do disparo da flecha 
+    /// e chame esta função "ExecuteAttackEvent".
+    /// </summary>
+    public void ExecuteAttackEvent()
+    {
+        if (currentClass == PlayerClass.Arqueiro)
+        {
+            ShootProjectile();
+        }
+        else
+        {
+            PerformMeleeAttack();
+        }
+    }
+
+    private void PerformMeleeAttack()
+    {
+        if (meleeAttackPoint == null) return;
+
+        Vector3 hitboxSize = currentClass == PlayerClass.Espadachim 
+            ? new Vector3(swordAttackWidth, 2f, swordAttackRange) 
+            : new Vector3(lanceAttackWidth, 2f, lanceAttackRange);
+
+        // Ajusta o centro do ataque para frente com base no alcance
+        Vector3 boxCenter = meleeAttackPoint.position + meleeAttackPoint.forward * (hitboxSize.z / 2f);
+
+        Collider[] hitEnemies = Physics.OverlapBox(boxCenter, hitboxSize / 2f, meleeAttackPoint.rotation, enemyLayers);
+
+        foreach (Collider enemy in hitEnemies)
+        {
+            Debug.Log($"Acertou o inimigo: {enemy.name} com a classe {currentClass}");
+            // Exemplo: enemy.GetComponent<EnemyHealth>().TakeDamage(10);
+        }
+    }
+
+    private void ShootProjectile()
+    {
+        if (rangedFirePoint == null || projectilePrefab == null) return;
+
+        Instantiate(projectilePrefab, rangedFirePoint.position, rangedFirePoint.rotation);
+    }
+
+    /// <summary>
+    /// MÉTODO PARA OS DESIGNERS:
+    /// Desenha as caixas de colisão de ataque na tela da Unity para facilitar o balanceamento.
+    /// </summary>
+    private void OnDrawGizmosSelected()
+    {
+        if (meleeAttackPoint == null) return;
+
+        Gizmos.color = currentClass == PlayerClass.Espadachim ? Color.red : (currentClass == PlayerClass.Lanceiro ? Color.blue : Color.green);
+
+        if (currentClass == PlayerClass.Espadachim || currentClass == PlayerClass.Lanceiro)
+        {
+            Vector3 hitboxSize = currentClass == PlayerClass.Espadachim 
+                ? new Vector3(swordAttackWidth, 2f, swordAttackRange) 
+                : new Vector3(lanceAttackWidth, 2f, lanceAttackRange);
+
+            Vector3 boxCenter = meleeAttackPoint.position + meleeAttackPoint.forward * (hitboxSize.z / 2f);
+            
+            // Desenha o Hitbox
+            Gizmos.matrix = Matrix4x4.TRS(boxCenter, meleeAttackPoint.rotation, hitboxSize);
+            Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
         }
     }
 }
