@@ -26,7 +26,9 @@ public class GameStateManager : MonoBehaviour
 
     public GameState CurrentState { get; private set; } = GameState.InitialScreen;
     
-    public PlayerClass SelectedClass { get; set; } = PlayerClass.Arqueiro;
+    [Header("Classe do Personagem")]
+    [Tooltip("Usado só para testes no Editor. Em jogo, a classe vem do GameStateManager.")]
+    public PlayerClass SelectedClass { get; set; } = PlayerClass.Lanceiro;
     public bool IsWorldPaused =>
         CurrentState == GameState.Pause ||
         CurrentState == GameState.GameOver;

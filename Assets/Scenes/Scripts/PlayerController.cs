@@ -2,15 +2,13 @@ using UnityEngine;
 using UnityEngine.Animations.Rigging; // Adicione isso lá em cima
 using UnityEngine.InputSystem;
 
+
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Animator))]
 public class FireKnightController : MonoBehaviour
 {
-    [Header("Classe do Personagem")]
-    [Tooltip("Usado só para testes no Editor. Em jogo, a classe vem do GameStateManager.")]
     public PlayerClass currentClass = PlayerClass.Espadachim;
-
     [Header("Referências de Câmera")]
     [SerializeField] private ThirdPersonCamera cameraRig;
     [SerializeField] private Transform cameraPivot;
@@ -23,6 +21,10 @@ public class FireKnightController : MonoBehaviour
     public Transform groundCheck;
     public float groundDistance = 0.3f;
     public LayerMask groundMask;
+
+    [Header("Configuração do Tiro")]
+    [Tooltip("Quanto tempo o peito continua mirando APÓS soltar a flecha")]
+    public float tempoSegurandoRig = 1.0f;
 
     [Header("Esquiva")]
     public float dashForce    = 15f;
@@ -66,14 +68,17 @@ public class FireKnightController : MonoBehaviour
     public bool isAimingState { get; private set; }
 
     // Métodos públicos para o Combat chamar
-    public void TriggerAttackAnimation() 
+   public void TriggerAttackAnimation() 
     {
         isAttacking = true;
         anim.SetTrigger(HashAttackTrigger);
-        // Use Invoke ou um Animation Event para voltar isAttacking para false após o tiro
-        Invoke(nameof(ResetAttackState), 0.5f); // ajuste o tempo conforme a sua animação
+        
+        // Cancela qualquer timer antigo para não bugar
+        CancelInvoke(nameof(ResetAttackState)); 
+        
+        // Desliga o isAttacking exatamente após o tempo que você configurou!
+        Invoke(nameof(ResetAttackState), tempoSegurandoRig); 
     }
-
     private void ResetAttackState() => isAttacking = false;
 
     // 2. Atualize o seu método SetAiming
