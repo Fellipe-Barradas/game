@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Animations.Rigging; // Adicione isso lá em cima
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -29,6 +30,10 @@ public class FireKnightController : MonoBehaviour
     public float dashCooldown = 1f;
     public bool isInvincible { get; private set; }
 
+    [Header("Mira com Rigging")]
+    public Rig rig; 
+    public float rigBlendSpeed = 10f;
+    
     // Privates
     private Rigidbody rb;
     private Animator  anim;
@@ -41,6 +46,7 @@ public class FireKnightController : MonoBehaviour
     private float jumpGraceTimer    = 0f;
     private float jumpGraceDuration = 0.15f;
     private float rawMoveX, rawMoveZ;
+    private bool isAttacking = false; // Variável movida para cá para organizar
 
     // Hashes — Base Layer
     private static readonly int HashIsJumping  = Animator.StringToHash("isJumping");
@@ -56,9 +62,26 @@ public class FireKnightController : MonoBehaviour
     private static readonly int HashAttackTrigger = Animator.StringToHash("attackTrigger");
     private static readonly int HashIsAiming      = Animator.StringToHash("isAiming");
 
+    // 1. Propriedade para rastrear o estado de mira
+    public bool isAimingState { get; private set; }
+
     // Métodos públicos para o Combat chamar
-    public void TriggerAttackAnimation() => anim.SetTrigger(HashAttackTrigger);
-    public void SetAiming(bool value)     => anim.SetBool(HashIsAiming, value);
+    public void TriggerAttackAnimation() 
+    {
+        isAttacking = true;
+        anim.SetTrigger(HashAttackTrigger);
+        // Use Invoke ou um Animation Event para voltar isAttacking para false após o tiro
+        Invoke(nameof(ResetAttackState), 0.5f); // ajuste o tempo conforme a sua animação
+    }
+
+    private void ResetAttackState() => isAttacking = false;
+
+    // 2. Atualize o seu método SetAiming
+    public void SetAiming(bool value)
+    {
+        isAimingState = value;
+        anim.SetBool(HashIsAiming, value);
+    }
 
     private void Start()
     {
@@ -108,6 +131,9 @@ public class FireKnightController : MonoBehaviour
         HandleJump(keyboard);
         HandleDash(keyboard);
         UpdateAnimations();
+        
+        // Chamada adicionada para processar o Rigging
+        UpdateRigWeight();
     }
 
     private void GroundCheck()
@@ -153,14 +179,28 @@ public class FireKnightController : MonoBehaviour
         moveDirection   = (forward * rawMoveZ + right * rawMoveX).normalized;
     }
 
+    // Modifique a rotação para ser imediata se estiver atirando
     private void ApplyYawRotation()
     {
-        if (cameraRig == null) return;
-        transform.rotation = Quaternion.Slerp(
-            transform.rotation,
-            cameraRig.YawRotation,
-            rotationSpeed * Time.deltaTime
-        );
+        if (cameraRig == null || cameraPivot == null) return;
+
+        // Se estiver atacando ou mirando, força o personagem a olhar para a frente da câmera
+        if (isAttacking || anim.GetBool(HashIsAiming))
+        {
+            Vector3 cameraForward = cameraPivot.forward;
+            cameraForward.y = 0f; // Mantém a rotação apenas no eixo Y
+            
+            if (cameraForward != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(cameraForward);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * 2f * Time.deltaTime);
+            }
+        }
+        else
+        {
+            // Rotação normal de movimento (o que você já tinha)
+            transform.rotation = Quaternion.Slerp(transform.rotation, cameraRig.YawRotation, rotationSpeed * Time.deltaTime);
+        }
     }
 
     private void HandleJump(Keyboard keyboard)
@@ -198,6 +238,17 @@ public class FireKnightController : MonoBehaviour
 
         anim.SetFloat(HashMoveX, Mathf.Lerp(anim.GetFloat(HashMoveX), targetX, Time.deltaTime * 12f));
         anim.SetFloat(HashMoveZ, Mathf.Lerp(anim.GetFloat(HashMoveZ), targetZ, Time.deltaTime * 12f));
+    }
+
+    // Método responsável por controlar o peso do Rigging
+    private void UpdateRigWeight()
+    {
+        if (rig == null) return;
+
+        // Se estiver mirando ou atirando, o peso vai para 1. Senão, vai para 0.
+        float targetWeight = (isAimingState || isAttacking) ? 1f : 0f;
+        
+        rig.weight = Mathf.Lerp(rig.weight, targetWeight, Time.deltaTime * rigBlendSpeed);
     }
 
     private void FixedUpdate()
