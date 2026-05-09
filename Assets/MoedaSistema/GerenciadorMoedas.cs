@@ -1,41 +1,64 @@
 using UnityEngine;
-using TMPro;
+using System;
 
 public class GerenciadorMoedas : MonoBehaviour
 {
-    public static GerenciadorMoedas Instancia;
+    public static GerenciadorMoedas Instancia { get; private set; }
     
-    public int moedasDePrata = 0;
-    public int moedasDeOuro = 0;
+    [SerializeField] private int moedasDePrata = 0;
+    [SerializeField] private int moedasDeOuro = 0;
     
-    // Arraste o seu "TextoMoedas" para cá no Inspector
-    public TextMeshProUGUI textoInterface;
+    public int MoedasDePrata => moedasDePrata;
+    public int MoedasDeOuro => moedasDeOuro;
+    
+    // a UI escuta esse evento
+    public event Action<int, int> OnMoedasMudaram;
 
-    void Awake() { Instancia = this; }
+    private void Awake()
+    {
+        if (Instancia != null && Instancia != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instancia = this;
+    }
 
-    void Start()
+    private void Start()
     {
         moedasDeOuro = PlayerPrefs.GetInt("MoedasDeOuro", 0);
-        AtualizarUI();
+        // dispara evento inicial pra UI pegar valor de partida
+        OnMoedasMudaram?.Invoke(moedasDePrata, moedasDeOuro);
     }
 
     public void AdicionarMoedas(int prata, int ouro)
     {
         moedasDePrata += prata;
         moedasDeOuro += ouro;
-        
-        // Salva o ouro permanentemente
+        OnMoedasMudaram?.Invoke(moedasDePrata, moedasDeOuro);
+    }
+    
+    public bool GastarOuro(int quantidade)
+    {
+        if (quantidade <= 0 || moedasDeOuro < quantidade) return false;
+        moedasDeOuro -= quantidade;
+        OnMoedasMudaram?.Invoke(moedasDePrata, moedasDeOuro);
+        return true;
+    }
+    
+    public void SalvarProgresso()
+    {
         PlayerPrefs.SetInt("MoedasDeOuro", moedasDeOuro);
         PlayerPrefs.Save();
-        
-        AtualizarUI();
     }
-
-    void AtualizarUI()
+    
+    private void OnApplicationPause(bool pausou)
     {
-        if (textoInterface != null)
-        {
-            textoInterface.text = $"Prata: {moedasDePrata} | Ouro: {moedasDeOuro}";
-        }
+        if (pausou) SalvarProgresso();
+    }
+    
+    private void OnApplicationQuit()
+    {
+        SalvarProgresso();
     }
 }
