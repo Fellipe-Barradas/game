@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 
 public class MenuController : MonoBehaviour {
 
-    public GameObject menuInicial, menuOpcoes;
+    public GameObject menuInicial, menuOpcoes, classSelectionPanel;
 
     private void Start()
     {
@@ -21,25 +21,25 @@ public class MenuController : MonoBehaviour {
         }
     }
 
-    public void IrParaJogo()
+    public void IrParaSelecaoDeClasse()
     {
-        if (GameStateManager.Instance != null)
-        {
-            GameStateManager.Instance.StartGameplay();
-            return;
-        }
+        menuInicial.SetActive(false);
+        menuOpcoes.SetActive(false);
+        classSelectionPanel.SetActive(true);
     }
 
     public void IrParaMenuInicial()
     {
         menuInicial.SetActive(true);
         menuOpcoes.SetActive(false);
+        classSelectionPanel.SetActive(false);
     }
 
     public void IrParaOpcoes()
     {
         menuInicial.SetActive(false);
         menuOpcoes.SetActive(true);
+        classSelectionPanel.SetActive(false);
     }
 
     public void salvarConfiguracoesOpcoes()
