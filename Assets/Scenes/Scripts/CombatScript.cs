@@ -93,7 +93,16 @@ public class FireKnightCombat : MonoBehaviour
     {
         isChargingShot = false;
         controller.SetAiming(false);
+        
+        // Calcula o tempo de duração da animação (cooldown)
+        float rate = currentWeapon != null ? currentWeapon.attackRate : 1f;
+        float animDuration = 1f / rate; // Exemplo: se attackRate é 1, dura 2 segundos. Se é 2, dura 1 segundo.
+        
+        // Envia esse tempo para o Controller. 
+        // O Rig agora ficará ativo exatamente até a animação terminar!
         controller.TriggerAttackAnimation();
+
+        nextAttackTime = Time.time + animDuration;
     }
 
     // Botão direito cancela sem disparar
