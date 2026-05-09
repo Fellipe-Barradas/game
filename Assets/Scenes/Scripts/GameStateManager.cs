@@ -25,7 +25,8 @@ public class GameStateManager : MonoBehaviour
     [SerializeField] private Key craftingKey = Key.C;
 
     public GameState CurrentState { get; private set; } = GameState.InitialScreen;
-
+    
+    public PlayerClass SelectedClass { get; set; } = PlayerClass.Arqueiro;
     public bool IsWorldPaused =>
         CurrentState == GameState.Pause ||
         CurrentState == GameState.GameOver;

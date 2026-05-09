@@ -6,19 +6,26 @@ public class FireKnightCombat : MonoBehaviour
     [Header("Arma Equipada")]
     public WeaponData currentWeapon;
 
-    [Header("Configuracao de Acerto")]
-    public Transform attackPoint;
+    [Header("Configuração de Acerto — Corpo a Corpo")]
+    public Transform meleeAttackPoint;
     public LayerMask enemyLayers;
+    public float swordAttackRange = 2f;
+    public float swordAttackWidth = 3f;
+    public float lanceAttackRange = 4f;
+    public float lanceAttackWidth = 1f;
 
-    [Header("Feedbacks Visuais e Referencias")]
-    public Animator animator;
+    [Header("Configuração de Acerto — Distância")]
+    public Transform rangedFirePoint;
+    public GameObject projectilePrefab;
+
+    [Header("Feedbacks Visuais")]
     public ParticleSystem hitSparks;
-    public AudioSource audioSource;
 
-    [Header("Saude do Jogador")]
+    [Header("Saúde do Jogador")]
     public int maxHealth = 100;
 
-    [Header("Sons de Defesa e Dano")]
+    [Header("Sons")]
+    public AudioSource audioSource;
     public AudioClip blockSound;
     public AudioClip hurtSound;
 
@@ -26,94 +33,137 @@ public class FireKnightCombat : MonoBehaviour
 
     private float nextAttackTime;
     private int currentHealth;
-    private FireKnightController playerController;
+    private bool isChargingShot = false;
+    private FireKnightController controller;
 
     private void Start()
     {
         currentHealth = maxHealth;
-        playerController = GetComponent<FireKnightController>();
+        controller    = GetComponent<FireKnightController>();
     }
 
     private void Update()
+{
+    GameStateManager stateManager = GameStateManager.Instance;
+    if (stateManager != null && !stateManager.CanPlayerAct)
     {
-        if (currentWeapon == null)
+        isBlocking = false;
+        CancelAim();
+        return;
+    }
+
+    var mouse = Mouse.current;
+    if (mouse == null) return;
+
+    if (controller != null && controller.currentClass == PlayerClass.Arqueiro)
+    {
+        HandleArcherInput(mouse);
+        return;
+    }
+
+    isBlocking = mouse.rightButton.isPressed;
+
+    // A checagem do cooldown vem ANTES de qualquer coisa
+    if (!isBlocking && mouse.leftButton.wasPressedThisFrame)
+    {
+        if (Time.time >= nextAttackTime)
         {
-            return;
+            float rate     = currentWeapon != null ? currentWeapon.attackRate : 1f;
+            nextAttackTime = Time.time + 1f / rate;
+            Attack();
         }
+        // Se ainda no cooldown, não faz nada — nem som
+    }
+}
 
-        GameStateManager stateManager = GameStateManager.Instance;
-        if (stateManager != null && !stateManager.CanPlayerAct)
-        {
-            isBlocking = false;
+    private void HandleArcherInput(Mouse mouse)
+{
+    // Segurou — apenas entra em mira, sem trigger de animação
+    if (mouse.leftButton.wasPressedThisFrame && !isChargingShot)
+    {
+        isChargingShot = true;
+        controller.SetAiming(true);
 
-            if (animator != null)
-            {
-                animator.SetBool("IsBlocking", false);
-            }
+        if (audioSource != null && currentWeapon?.swingSound != null)
+            audioSource.PlayOneShot(currentWeapon.swingSound);
+    }
 
-            return;
-        }
+    // Soltou — sai da mira e dispara
+    if (mouse.leftButton.wasReleasedThisFrame && isChargingShot)
+    {
+        isChargingShot = false;
+        controller.SetAiming(false);
+        controller.TriggerAttackAnimation();
+    }
 
-        var mouse = Mouse.current;
+    // Botão direito cancela sem disparar
+    if (mouse.rightButton.wasPressedThisFrame && isChargingShot)
+        CancelAim();
+}
 
-        if (mouse != null && mouse.rightButton.isPressed)
-        {
-            isBlocking = true;
-
-            if (animator != null)
-            {
-                animator.SetBool("IsBlocking", true);
-            }
-        }
-        else
-        {
-            isBlocking = false;
-
-            if (animator != null)
-            {
-                animator.SetBool("IsBlocking", false);
-            }
-
-            if (mouse != null && mouse.leftButton.wasPressedThisFrame && Time.time >= nextAttackTime)
-            {
-                Attack();
-                nextAttackTime = Time.time + 1f / currentWeapon.attackRate;
-            }
-        }
+    private void CancelAim()
+    {
+        if (!isChargingShot) return;
+        isChargingShot = false;
+        controller.SetAiming(false);
     }
 
     private void Attack()
     {
-        if (animator != null)
-        {
-            animator.SetTrigger("Attack");
-        }
+        if (controller != null)
+            controller.TriggerAttackAnimation();
 
-        if (audioSource != null && currentWeapon.swingSound != null)
-        {
+        if (audioSource != null && currentWeapon?.swingSound != null)
             audioSource.PlayOneShot(currentWeapon.swingSound);
-        }
+    }
 
-        Collider[] hitEnemies = Physics.OverlapSphere(attackPoint.position, currentWeapon.attackRange, enemyLayers);
+    /// <summary>
+    /// MÉTODO PARA OS ANIMADORES:
+    /// Adicione um Animation Event no frame do impacto e chame "ExecuteAttackEvent".
+    /// </summary>
+    public void ExecuteAttackEvent()
+    {
+        if (controller == null) return;
 
-        foreach (Collider enemy in hitEnemies)
+        if (controller.currentClass == PlayerClass.Arqueiro)
+            ShootProjectile();
+        else
+            PerformMeleeAttack();
+    }
+
+    private void PerformMeleeAttack()
+    {
+        if (meleeAttackPoint == null) return;
+
+        Vector3 hitboxSize = controller.currentClass == PlayerClass.Espadachim
+            ? new Vector3(swordAttackWidth, 2f, swordAttackRange)
+            : new Vector3(lanceAttackWidth, 2f, lanceAttackRange);
+
+        Vector3 boxCenter = meleeAttackPoint.position
+                          + meleeAttackPoint.forward * (hitboxSize.z / 2f);
+
+        Collider[] hits = Physics.OverlapBox(
+            boxCenter, hitboxSize / 2f, meleeAttackPoint.rotation, enemyLayers);
+
+        int damage = currentWeapon != null ? currentWeapon.attackDamage : 10;
+
+        foreach (Collider enemy in hits)
         {
-            if (audioSource != null && currentWeapon.hitSound != null)
-            {
+            if (audioSource != null && currentWeapon?.hitSound != null)
                 audioSource.PlayOneShot(currentWeapon.hitSound);
-            }
 
             if (hitSparks != null)
-            {
                 Instantiate(hitSparks, enemy.ClosestPoint(transform.position), Quaternion.identity);
-            }
 
-            EnemyDummy enemyScript = enemy.GetComponent<EnemyDummy>();
-            if (enemyScript != null)
-            {
-                enemyScript.TakeDamage(currentWeapon.attackDamage);
-            }
+            if (enemy.TryGetComponent<EnemyDummy>(out EnemyDummy e))
+                e.TakeDamage(damage);
         }
+    }
+
+    private void ShootProjectile()
+    {
+        if (rangedFirePoint == null || projectilePrefab == null) return;
+        Instantiate(projectilePrefab, rangedFirePoint.position, rangedFirePoint.rotation);
     }
 
     public void TakeDamage(int damage)
@@ -121,15 +171,12 @@ public class FireKnightCombat : MonoBehaviour
         if (isBlocking)
         {
             if (audioSource != null && blockSound != null)
-            {
                 audioSource.PlayOneShot(blockSound);
-            }
-
             Debug.Log("Dano bloqueado.");
             return;
         }
 
-        if (playerController != null && playerController.isInvincible)
+        if (controller != null && controller.isInvincible)
         {
             Debug.Log("Esquivou do ataque.");
             return;
@@ -138,44 +185,52 @@ public class FireKnightCombat : MonoBehaviour
         currentHealth -= damage;
 
         if (audioSource != null && hurtSound != null)
-        {
             audioSource.PlayOneShot(hurtSound);
-        }
 
         Debug.Log("Jogador sofreu dano. Vida restante: " + currentHealth);
 
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
+        if (currentHealth <= 0) Die();
     }
 
     private void Die()
     {
         Debug.Log("Jogador morreu.");
-
         isBlocking = false;
-
-        if (animator != null)
-        {
-            animator.SetBool("IsBlocking", false);
-        }
-
-        GameStateManager stateManager = GameStateManager.Instance;
-        if (stateManager != null)
-        {
-            stateManager.SetState(GameState.GameOver);
-        }
+        GameStateManager.Instance?.SetState(GameState.GameOver);
     }
 
+    /// <summary>
+    /// MÉTODO PARA OS DESIGNERS:
+    /// Desenha os hitboxes no Scene View para balanceamento.
+    /// </summary>
     private void OnDrawGizmosSelected()
     {
-        if (attackPoint == null || currentWeapon == null)
-        {
-            return;
-        }
+        if (meleeAttackPoint == null || controller == null) return;
 
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(attackPoint.position, currentWeapon.attackRange);
+        Gizmos.color = controller.currentClass switch
+        {
+            PlayerClass.Espadachim => Color.red,
+            PlayerClass.Lanceiro   => Color.blue,
+            _                      => Color.green
+        };
+
+        if (controller.currentClass == PlayerClass.Arqueiro) return;
+
+        Vector3 hitboxSize = controller.currentClass == PlayerClass.Espadachim
+            ? new Vector3(swordAttackWidth, 2f, swordAttackRange)
+            : new Vector3(lanceAttackWidth, 2f, lanceAttackRange);
+
+        Vector3 boxCenter = meleeAttackPoint.position
+                          + meleeAttackPoint.forward * (hitboxSize.z / 2f);
+
+        Gizmos.matrix = Matrix4x4.TRS(boxCenter, meleeAttackPoint.rotation, hitboxSize);
+        Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+
+        if (currentWeapon != null)
+        {
+            Gizmos.color  = Color.yellow;
+            Gizmos.matrix = Matrix4x4.identity;
+            Gizmos.DrawWireSphere(meleeAttackPoint.position, currentWeapon.attackRange);
+        }
     }
 }
