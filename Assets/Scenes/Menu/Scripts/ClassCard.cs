@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class ClassCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [Header("Identificação")]
-    public string className;
+    public PlayerClass playerClass;
 
     [Header("Referências")]
     [SerializeField] private RectTransform cardVisual; // o filho CardVisual que anima

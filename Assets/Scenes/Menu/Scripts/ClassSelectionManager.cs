@@ -35,6 +35,8 @@ public class ClassSelectionManager : MonoBehaviour
     private void ConfirmSelection()
     {
         if (selectedCard == null) return;
+
+        GameStateManager.Instance.SelectedClass = selectedCard.playerClass;
         GameStateManager.Instance.StartGameplay();
     }
 
