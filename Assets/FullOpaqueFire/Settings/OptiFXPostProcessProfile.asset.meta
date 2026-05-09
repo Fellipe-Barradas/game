@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2bada7623c7346cf96b360ce39f12218
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 312221
+  packageName: Full Opaque Fire
+  packageVersion: 1.3
+  assetPath: Assets/FullOpaqueFire/Settings/OptiFXPostProcessProfile.asset
+  uploadId: 815508

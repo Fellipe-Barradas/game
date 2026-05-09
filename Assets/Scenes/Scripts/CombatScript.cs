@@ -1,142 +1,245 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class FireKnightCombat : MonoBehaviour
 {
     [Header("Arma Equipada")]
-    public WeaponData currentWeapon; // O script agora puxa TUDO daqui!
+    public WeaponData currentWeapon;
 
-    [Header("Configuração de Acerto")]
-    public Transform attackPoint;
+    [Header("Configuração de Acerto — Corpo a Corpo")]
+    public Transform meleeAttackPoint;
     public LayerMask enemyLayers;
+    public float swordAttackRange = 2f;
+    public float swordAttackWidth = 3f;
+    public float lanceAttackRange = 4f;
+    public float lanceAttackWidth = 1f;
 
-    [Header("Feedbacks Visuais e Referências")]
-    public Animator animator; 
-    public ParticleSystem hitSparks; 
-    public AudioSource audioSource;
+    [Header("Configuração de Acerto — Distância")]
+    public Transform rangedFirePoint;
+    public GameObject projectilePrefab;
 
-    private float nextAttackTime = 0f;
-    public bool isBlocking { get; private set; } = false;
+    [Header("Feedbacks Visuais")]
+    public ParticleSystem hitSparks;
 
     [Header("Saúde do Jogador")]
     public int maxHealth = 100;
+
+    [Header("Sons")]
+    public AudioSource audioSource;
+    public AudioClip blockSound;
+    public AudioClip hurtSound;
+
+    public bool isBlocking { get; private set; }
+
+    private float nextAttackTime;
     private int currentHealth;
+    private bool isChargingShot = false;
+    private FireKnightController controller;
 
-    [Header("Sons de Defesa e Dano")]
-    public AudioClip blockSound; // Som de espadas batendo ou escudo
-    public AudioClip hurtSound;  // Som do jogador tomando dano
-
-    void Update()
+    private void Start()
     {
-        // Se o jogador não tem arma equipada, não faz nada
-        if (currentWeapon == null) return;
-
         currentHealth = maxHealth;
+        controller    = GetComponent<FireKnightController>();
+    }
 
-        // DEFESA
-        if (Input.GetMouseButton(1))
+    private void Update()
+{
+    GameStateManager stateManager = GameStateManager.Instance;
+    if (stateManager != null && !stateManager.CanPlayerAct)
+    {
+        isBlocking = false;
+        CancelAim();
+        return;
+    }
+
+    var mouse = Mouse.current;
+    if (mouse == null) return;
+
+    if (controller != null && controller.currentClass == PlayerClass.Arqueiro)
+    {
+        HandleArcherInput(mouse);
+        return;
+    }
+
+    isBlocking = mouse.rightButton.isPressed;
+
+    // A checagem do cooldown vem ANTES de qualquer coisa
+    if (!isBlocking && mouse.leftButton.wasPressedThisFrame)
+    {
+        if (Time.time >= nextAttackTime)
         {
-            isBlocking = true;
-            if (animator != null) animator.SetBool("IsBlocking", true);
+            float rate     = currentWeapon != null ? currentWeapon.attackRate : 1f;
+            nextAttackTime = Time.time + 1f / rate;
+            Attack();
         }
-        else
-        {
-            isBlocking = false;
-            if (animator != null) animator.SetBool("IsBlocking", false);
+        // Se ainda no cooldown, não faz nada — nem som
+    }
+}
 
-            // ATAQUE
-            if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime)
-            {
-                Attack();
-                nextAttackTime = Time.time + 1f / currentWeapon.attackRate;
-            }
+    private void HandleArcherInput(Mouse mouse)
+{
+    // Segurou — apenas entra em mira, sem trigger de animação
+    if (mouse.leftButton.wasPressedThisFrame && !isChargingShot)
+    {
+        isChargingShot = true;
+        controller.SetAiming(true);
+
+        if (audioSource != null && currentWeapon?.swingSound != null)
+            audioSource.PlayOneShot(currentWeapon.swingSound);
+    }
+
+    // Soltou — sai da mira e dispara
+    if (mouse.leftButton.wasReleasedThisFrame && isChargingShot)
+    {
+        isChargingShot = false;
+        controller.SetAiming(false);
+        
+        // Calcula o tempo de duração da animação (cooldown)
+        float rate = currentWeapon != null ? currentWeapon.attackRate : 1f;
+        float animDuration = 1f / rate; // Exemplo: se attackRate é 1, dura 2 segundos. Se é 2, dura 1 segundo.
+        
+        // Envia esse tempo para o Controller. 
+        // O Rig agora ficará ativo exatamente até a animação terminar!
+        controller.TriggerAttackAnimation();
+
+        nextAttackTime = Time.time + animDuration;
+    }
+
+    // Botão direito cancela sem disparar
+    if (mouse.rightButton.wasPressedThisFrame && isChargingShot)
+        CancelAim();
+}
+
+    private void CancelAim()
+    {
+        if (!isChargingShot) return;
+        isChargingShot = false;
+        controller.SetAiming(false);
+    }
+
+    private void Attack()
+    {
+        if (controller != null)
+            controller.TriggerAttackAnimation();
+
+        if (audioSource != null && currentWeapon?.swingSound != null)
+            audioSource.PlayOneShot(currentWeapon.swingSound);
+    }
+
+    /// <summary>
+    /// MÉTODO PARA OS ANIMADORES:
+    /// Adicione um Animation Event no frame do impacto e chame "ExecuteAttackEvent".
+    /// </summary>
+    public void ExecuteAttackEvent()
+    {
+        if (controller == null) return;
+
+        if (controller.currentClass == PlayerClass.Arqueiro)
+            ShootProjectile();
+        else
+            PerformMeleeAttack();
+    }
+
+    private void PerformMeleeAttack()
+    {
+        if (meleeAttackPoint == null) return;
+
+        Vector3 hitboxSize = controller.currentClass == PlayerClass.Espadachim
+            ? new Vector3(swordAttackWidth, 2f, swordAttackRange)
+            : new Vector3(lanceAttackWidth, 2f, lanceAttackRange);
+
+        Vector3 boxCenter = meleeAttackPoint.position
+                          + meleeAttackPoint.forward * (hitboxSize.z / 2f);
+
+        Collider[] hits = Physics.OverlapBox(
+            boxCenter, hitboxSize / 2f, meleeAttackPoint.rotation, enemyLayers);
+
+        int damage = currentWeapon != null ? currentWeapon.attackDamage : 10;
+
+        foreach (Collider enemy in hits)
+        {
+            if (audioSource != null && currentWeapon?.hitSound != null)
+                audioSource.PlayOneShot(currentWeapon.hitSound);
+
+            if (hitSparks != null)
+                Instantiate(hitSparks, enemy.ClosestPoint(transform.position), Quaternion.identity);
+
+            if (enemy.TryGetComponent<EnemyDummy>(out EnemyDummy e))
+                e.TakeDamage(damage);
         }
     }
 
-    void Attack()
+    private void ShootProjectile()
     {
-        // 1. Animação e Som Específico da Arma
-        if (animator != null) animator.SetTrigger("Attack");
-        if (audioSource != null && currentWeapon.swingSound != null) 
-        {
-            audioSource.PlayOneShot(currentWeapon.swingSound);
-        }
-
-        // 2. Detectar inimigos usando o alcance específico da Arma
-        Collider[] hitEnemies = Physics.OverlapSphere(attackPoint.position, currentWeapon.attackRange, enemyLayers);
-
-        // 3. Aplicar Dano e Feedbacks
-        foreach (Collider enemy in hitEnemies)
-        {
-            // Toca o som de impacto específico da arma
-            if (audioSource != null && currentWeapon.hitSound != null) 
-            {
-                audioSource.PlayOneShot(currentWeapon.hitSound);
-            }
-
-            if (hitSparks != null)
-            {
-                Instantiate(hitSparks, enemy.ClosestPoint(transform.position), Quaternion.identity);
-            }
-
-            EnemyDummy enemyScript = enemy.GetComponent<EnemyDummy>();
-            if (enemyScript != null)
-            {
-                enemyScript.TakeDamage(currentWeapon.attackDamage); // Causa o dano da arma
-            }
-        }
+        if (rangedFirePoint == null || projectilePrefab == null) return;
+        Instantiate(projectilePrefab, rangedFirePoint.position, rangedFirePoint.rotation);
     }
 
     public void TakeDamage(int damage)
     {
-        // 1. Verifica se a Defesa está ativa
         if (isBlocking)
         {
-            // Feedback de Bloqueio (Som) e anula o dano
             if (audioSource != null && blockSound != null)
-            {
                 audioSource.PlayOneShot(blockSound);
-            }
-            Debug.Log("Dano Bloqueado!");
-            return; // Interrompe o código aqui para não tomar dano
+            Debug.Log("Dano bloqueado.");
+            return;
         }
 
-        // 2. Verifica se está no meio de um Dash (Invencibilidade do GDD)
-        FireKnightController controller = GetComponent<FireKnightController>();
         if (controller != null && controller.isInvincible)
         {
-            Debug.Log("Esquivou do ataque! (I-frames)");
-            return; 
+            Debug.Log("Esquivou do ataque.");
+            return;
         }
 
-        // 3. Se não defendeu nem esquivou, toma dano
         currentHealth -= damage;
-        
-        // Feedback Sonoro de Dano
+
         if (audioSource != null && hurtSound != null)
-        {
             audioSource.PlayOneShot(hurtSound);
-        }
 
-        Debug.Log("Jogador sofreu dano! Vida restante: " + currentHealth);
+        Debug.Log("Jogador sofreu dano. Vida restante: " + currentHealth);
 
-        // 4. Condição de Derrota (GDD)
-        if (currentHealth <= 0)
+        if (currentHealth <= 0) Die();
+    }
+
+    private void Die()
+    {
+        Debug.Log("Jogador morreu.");
+        isBlocking = false;
+        GameStateManager.Instance?.SetState(GameState.GameOver);
+    }
+
+    /// <summary>
+    /// MÉTODO PARA OS DESIGNERS:
+    /// Desenha os hitboxes no Scene View para balanceamento.
+    /// </summary>
+    private void OnDrawGizmosSelected()
+    {
+        if (meleeAttackPoint == null || controller == null) return;
+
+        Gizmos.color = controller.currentClass switch
         {
-            Die();
+            PlayerClass.Espadachim => Color.red,
+            PlayerClass.Lanceiro   => Color.blue,
+            _                      => Color.green
+        };
+
+        if (controller.currentClass == PlayerClass.Arqueiro) return;
+
+        Vector3 hitboxSize = controller.currentClass == PlayerClass.Espadachim
+            ? new Vector3(swordAttackWidth, 2f, swordAttackRange)
+            : new Vector3(lanceAttackWidth, 2f, lanceAttackRange);
+
+        Vector3 boxCenter = meleeAttackPoint.position
+                          + meleeAttackPoint.forward * (hitboxSize.z / 2f);
+
+        Gizmos.matrix = Matrix4x4.TRS(boxCenter, meleeAttackPoint.rotation, hitboxSize);
+        Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+
+        if (currentWeapon != null)
+        {
+            Gizmos.color  = Color.yellow;
+            Gizmos.matrix = Matrix4x4.identity;
+            Gizmos.DrawWireSphere(meleeAttackPoint.position, currentWeapon.attackRange);
         }
-    }
-
-    void Die()
-    {
-        Debug.Log("Jogador Morreu! Voltando ao Menu Principal e perdendo os itens...");
-        // TODO: Lógica de recarregar a cena do Menu Principal
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        // Usa o range da arma equipada para desenhar a esfera de debug
-        if (attackPoint == null || currentWeapon == null) return;
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(attackPoint.position, currentWeapon.attackRange);
     }
 }

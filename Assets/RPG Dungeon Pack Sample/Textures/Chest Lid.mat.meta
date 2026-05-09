@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 835c2b8c1d85d7448a1fee83f2f5613c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 348672
+  packageName: RPG Dungeon Kit DEMO
+  packageVersion: 1.0
+  assetPath: Assets/RPG Dungeon Pack Sample/Textures/Chest Lid.mat
+  uploadId: 829346

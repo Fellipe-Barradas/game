@@ -1,154 +1,321 @@
 using UnityEngine;
+using UnityEngine.Animations.Rigging; // Adicione isso lá em cima
+using UnityEngine.InputSystem;
+
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
+[RequireComponent(typeof(Animator))]
 public class FireKnightController : MonoBehaviour
 {
-    [Header("Movimenta��o B�sica")]
-    public float walkSpeed = 5f;
-    public float runSpeed = 8f; // Segure Ctrl Esquerdo para correr
-    public float mouseSensitivity = 200f;
+    public PlayerClass currentClass = PlayerClass.Espadachim;
+    [Header("Referências de Câmera")]
+    [SerializeField] private ThirdPersonCamera cameraRig;
+    [SerializeField] private Transform cameraPivot;
 
-    [Header("Pulo")]
-    public float jumpForce = 6f;
+    [Header("Movimentação e Pulo")]
+    public float walkSpeed      = 5f;
+    public float runSpeed       = 8f;
+    [SerializeField] private float rotationSpeed = 15f;
+    public float jumpForce      = 6f;
     public Transform groundCheck;
     public float groundDistance = 0.3f;
     public LayerMask groundMask;
-    private bool isGrounded;
 
-    [Header("Esquiva (Dash / Roll)")]
-    public float dashForce = 15f;
+    [Header("Configuração do Tiro")]
+    [Tooltip("Quanto tempo o peito continua mirando APÓS soltar a flecha")]
+    public float tempoSegurandoRig = 1.0f;
+
+    [Header("Esquiva")]
+    public float dashForce    = 15f;
     public float dashDuration = 0.25f;
     public float dashCooldown = 1f;
+    public bool isInvincible { get; private set; }
 
-    // GDD: Esquiva (Dash) usa Shift Esq. e deixa invenc�vel durante o per�odo
-    public bool isInvincible { get; private set; } = false;
-    private bool isDashing = false;
-    private float dashTimeCounter;
-    private float lastDashTime = -10f;
-
-    // Refer�ncias e Inputs
+    [Header("Mira com Rigging")]
+    public Rig rig; 
+    public float rigBlendSpeed = 10f;
+    
+    // Privates
     private Rigidbody rb;
-    private float rotationY;
-    private Vector3 moveDirection;
+    private Animator  anim;
+    private Vector3   moveDirection;
+    private bool isGrounded, isJumping, isDashing, isSprinting;
+    private float dashTimeCounter;
+    private float lastDashTime      = -10f;
+    private bool  pendingJump, pendingDash;
+    private float pendingDashForce;
+    private float jumpGraceTimer    = 0f;
+    private float jumpGraceDuration = 0.15f;
+    private float rawMoveX, rawMoveZ;
+    private bool isAttacking = false; // Variável movida para cá para organizar
 
-    void Start()
+    // Hashes — Base Layer
+    private static readonly int HashIsJumping  = Animator.StringToHash("isJumping");
+    private static readonly int HashIsGrounded = Animator.StringToHash("isGrounded");
+    private static readonly int HashIsWalking  = Animator.StringToHash("isWalking");
+    private static readonly int HashIsRunning  = Animator.StringToHash("isRunning");
+    private static readonly int HashMoveX      = Animator.StringToHash("moveX");
+    private static readonly int HashMoveZ      = Animator.StringToHash("moveZ");
+    private static readonly int HashIsDashing  = Animator.StringToHash("isDashing");
+
+    // Hashes — Upper Body Layer
+    private static readonly int HashClassIndex    = Animator.StringToHash("classIndex");
+    private static readonly int HashAttackTrigger = Animator.StringToHash("attackTrigger");
+    private static readonly int HashIsAiming      = Animator.StringToHash("isAiming");
+
+    // 1. Propriedade para rastrear o estado de mira
+    public bool isAimingState { get; private set; }
+
+    // Métodos públicos para o Combat chamar
+   public void TriggerAttackAnimation() 
     {
-        rb = GetComponent<Rigidbody>();
+        isAttacking = true;
+        anim.SetTrigger(HashAttackTrigger);
+        
+        // Cancela qualquer timer antigo para não bugar
+        CancelInvoke(nameof(ResetAttackState)); 
+        
+        // Desliga o isAttacking exatamente após o tempo que você configurou!
+        Invoke(nameof(ResetAttackState), tempoSegurandoRig); 
+    }
+    private void ResetAttackState() => isAttacking = false;
 
-        // Trava o cursor e esconde o mouse
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+    // 2. Atualize o seu método SetAiming
+    public void SetAiming(bool value)
+    {
+        isAimingState = value;
+        anim.SetBool(HashIsAiming, value);
+    }
 
-        // Configura��es obrigat�rias de F�sica via c�digo para evitar erros no Editor
-        rb.freezeRotation = true;
-        rb.interpolation = RigidbodyInterpolation.Interpolate;
+    private void Start()
+    {
+        rb   = GetComponent<Rigidbody>();
+        anim = GetComponent<Animator>();
+        rb.freezeRotation         = true;
+        rb.interpolation          = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+        if (cameraRig == null)   Debug.LogError("FireKnightController: cameraRig not assigned.",    this);
+        if (cameraPivot == null) Debug.LogError("FireKnightController: cameraPivot not assigned.",  this);
+        if (groundCheck == null) Debug.LogWarning("FireKnightController: groundCheck not assigned.", this);
+
+        ApplyClass();
     }
 
-    void Update()
+    private void ApplyClass()
     {
-        // 1. Rota��o do Personagem (Mouse)
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        rotationY += mouseX;
-        transform.rotation = Quaternion.Euler(0f, rotationY, 0f);
+        if (GameStateManager.Instance != null)
+            currentClass = GameStateManager.Instance.SelectedClass;
 
-        // 2. Verifica��o de Ch�o (Ground Check)
+        anim.SetInteger(HashClassIndex, (int)currentClass);
+    }
+
+    private void LateUpdate()
+    {
+        GameStateManager stateManager = GameStateManager.Instance;
+        if (stateManager != null && !stateManager.CanPlayerMove)
+        {
+            moveDirection = Vector3.zero;
+            rawMoveX = rawMoveZ = 0f;
+            isSprinting = false;
+            anim.SetBool(HashIsWalking, false);
+            anim.SetBool(HashIsRunning, false);
+            anim.SetFloat(HashMoveX, 0f);
+            anim.SetFloat(HashMoveZ, 0f);
+            return;
+        }
+
+        GroundCheck();
+
+        var keyboard = Keyboard.current;
+        isSprinting  = keyboard != null && keyboard.leftCtrlKey.isPressed;
+
+        ReadMovementInput(keyboard);
+        ApplyYawRotation();
+        HandleJump(keyboard);
+        HandleDash(keyboard);
+        UpdateAnimations();
+        
+        // Chamada adicionada para processar o Rigging
+        UpdateRigWeight();
+    }
+
+    private void GroundCheck()
+    {
+        if (jumpGraceTimer > 0f)
+        {
+            jumpGraceTimer -= Time.deltaTime;
+            isGrounded = false;
+            anim.SetBool(HashIsGrounded, false);
+            return;
+        }
+
         if (groundCheck != null)
-        {
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
-        }
 
-        // 3. Captura de Input de Movimento (W, A, S, D) - GDD
-        float moveX = Input.GetAxisRaw("Horizontal");
-        float moveZ = Input.GetAxisRaw("Vertical");
-        // Pega a direção da câmera mas ignora a inclinação vertical (Y)
-        Vector3 camForward = Camera.main.transform.forward;
-        camForward.y = 0;
-        camForward.Normalize();
+        anim.SetBool(HashIsGrounded, isGrounded);
 
-        Vector3 camRight = Camera.main.transform.right;
-        camRight.y = 0;
-        camRight.Normalize();
-
-        // O movimento agora é baseado na visão da câmera!
-        moveDirection = (camForward * moveZ + camRight * moveX).normalized;
-
-        // 4. L�gica de Pulo (Espa�o)
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded && !isDashing)
+        if (isJumping && isGrounded)
         {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z); // Zera o Y antes para pulos consistentes
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        }
-
-        // 5. L�gica de Esquiva/Dash (Shift Esquerdo) - GDD
-        if (Input.GetKeyDown(KeyCode.LeftShift) && Time.time >= lastDashTime + dashCooldown && !isDashing)
-        {
-            StartEvasion(dashForce);
-        }
-
-        // 6. L�gica de Rolamento (Alt Esquerdo)
-        if (Input.GetKeyDown(KeyCode.LeftAlt) && isGrounded && Time.time >= lastDashTime + dashCooldown && !isDashing)
-        {
-            // O rolamento compartilha a mesma mec�nica f�sica do Dash, mas pode receber 
-            // uma for�a diferente e ser� o local onde voc� engatilhar� a anima��o de rolar.
-            StartEvasion(dashForce * 0.8f); // Rolar empurra um pouco menos que o Dash
+            isJumping = false;
+            anim.SetBool(HashIsJumping, false);
         }
     }
 
-    void FixedUpdate()
+    private void ReadMovementInput(Keyboard keyboard)
     {
-        // Seletor de Estados F�sicos
-        if (isDashing)
+        if (keyboard == null || cameraPivot == null)
         {
-            HandleEvasion();
+            moveDirection = Vector3.zero;
+            rawMoveX = rawMoveZ = 0f;
+            return;
+        }
+
+        rawMoveX = rawMoveZ = 0f;
+
+        if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)  rawMoveX -= 1f;
+        if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) rawMoveX += 1f;
+        if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed)  rawMoveZ -= 1f;
+        if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed)    rawMoveZ += 1f;
+
+        Vector3 forward = cameraPivot.forward; forward.y = 0f; forward.Normalize();
+        Vector3 right   = cameraPivot.right;   right.y   = 0f; right.Normalize();
+        moveDirection   = (forward * rawMoveZ + right * rawMoveX).normalized;
+    }
+
+    // Modifique a rotação para ser imediata se estiver atirando
+    private void ApplyYawRotation()
+    {
+        if (cameraRig == null || cameraPivot == null) return;
+
+        // Se estiver atacando ou mirando, força o personagem a olhar para a frente da câmera
+        if (isAttacking || anim.GetBool(HashIsAiming))
+        {
+            Vector3 cameraForward = cameraPivot.forward;
+            cameraForward.y = 0f; // Mantém a rotação apenas no eixo Y
+            
+            if (cameraForward != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(cameraForward);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * 2f * Time.deltaTime);
+            }
         }
         else
         {
-            MovePlayer();
+            // Rotação normal de movimento (o que você já tinha)
+            transform.rotation = Quaternion.Slerp(transform.rotation, cameraRig.YawRotation, rotationSpeed * Time.deltaTime);
         }
+    }
+
+    private void HandleJump(Keyboard keyboard)
+    {
+        if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame && isGrounded && !isDashing)
+        {
+            pendingJump    = true;
+            isJumping      = true;
+            jumpGraceTimer = jumpGraceDuration;
+            anim.SetBool(HashIsJumping,  true);
+            anim.SetBool(HashIsGrounded, false);
+        }
+    }
+
+    private void HandleDash(Keyboard keyboard)
+    {
+        if (keyboard == null) return;
+        bool cooldownReady = Time.time >= lastDashTime + dashCooldown && !isDashing;
+        if (keyboard.leftShiftKey.wasPressedThisFrame && cooldownReady)
+            StartEvasion(dashForce);
+        if (keyboard.leftAltKey.wasPressedThisFrame && isGrounded && cooldownReady)
+            StartEvasion(dashForce * 0.8f);
+    }
+
+    private void UpdateAnimations()
+    {
+        bool moving = moveDirection.sqrMagnitude > 0.01f && isGrounded && !isJumping && !isDashing;
+
+        anim.SetBool(HashIsWalking, moving && !isSprinting);
+        anim.SetBool(HashIsRunning, moving && isSprinting);
+
+        float speedMult = isSprinting ? 2f : 1f;
+        float targetX   = moving ? rawMoveX * speedMult : 0f;
+        float targetZ   = moving ? rawMoveZ * speedMult : 0f;
+
+        anim.SetFloat(HashMoveX, Mathf.Lerp(anim.GetFloat(HashMoveX), targetX, Time.deltaTime * 12f));
+        anim.SetFloat(HashMoveZ, Mathf.Lerp(anim.GetFloat(HashMoveZ), targetZ, Time.deltaTime * 12f));
+    }
+
+    // Método responsável por controlar o peso do Rigging
+    private void UpdateRigWeight()
+    {
+        if (rig == null) return;
+
+        // Se estiver mirando ou atirando, o peso vai para 1. Senão, vai para 0.
+        float targetWeight = (isAimingState || isAttacking) ? 1f : 0f;
+        
+        rig.weight = Mathf.Lerp(rig.weight, targetWeight, Time.deltaTime * rigBlendSpeed);
+    }
+
+    private void FixedUpdate()
+    {
+        GameStateManager stateManager = GameStateManager.Instance;
+        if (stateManager != null && !stateManager.CanPlayerMove)
+        {
+            pendingJump = pendingDash = false;
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+            return;
+        }
+
+        if (pendingJump)
+        {
+            pendingJump = false;
+            isJumping   = true;
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+
+        if (pendingDash)
+        {
+            pendingDash       = false;
+            rb.linearVelocity = Vector3.zero;
+            Vector3 dir = moveDirection.sqrMagnitude > 0.01f ? moveDirection : transform.forward;
+            rb.AddForce(dir * pendingDashForce, ForceMode.VelocityChange);
+        }
+
+        if (isDashing) HandleEvasion();
+        else           MovePlayer();
     }
 
     private void MovePlayer()
     {
-        // Define se est� andando ou correndo (Segurar Ctrl Esq. para correr)
-        float currentSpeed = Input.GetKey(KeyCode.LeftControl) ? runSpeed : walkSpeed;
-
-        // Move o Rigidbody calculando a dire��o e velocidade
-        Vector3 targetVelocity = moveDirection * currentSpeed;
-
-        // Mant�m a velocidade de queda (eixo Y) intacta para a gravidade funcionar
-        targetVelocity.y = rb.linearVelocity.y;
-
-        rb.linearVelocity = targetVelocity;
+        float speed = isSprinting ? runSpeed : walkSpeed;
+        rb.linearVelocity = new Vector3(
+            moveDirection.x * speed,
+            rb.linearVelocity.y,
+            moveDirection.z * speed
+        );
     }
 
-    private void StartEvasion(float appliedForce)
+    private void StartEvasion(float force)
     {
-        isDashing = true;
-        isInvincible = true; // Aplica invencibilidade mec�nica baseada no GDD
-        dashTimeCounter = dashDuration;
-        lastDashTime = Time.time;
-
-        // Zera a velocidade atual para a esquiva ter acelera��o instant�nea
-        rb.linearVelocity = Vector3.zero;
-
-        // Calcula a dire��o. Se estiver parado, faz o dash para frente da c�mera.
-        Vector3 evasionDirection = moveDirection == Vector3.zero ? transform.forward : moveDirection;
-
-        rb.AddForce(evasionDirection * appliedForce, ForceMode.VelocityChange);
+        isDashing        = true;
+        isInvincible     = true;
+        dashTimeCounter  = dashDuration;
+        lastDashTime     = Time.time;
+        pendingDash      = true;
+        pendingDashForce = force;
+        anim.SetBool(HashIsDashing, true);
     }
 
     private void HandleEvasion()
     {
         dashTimeCounter -= Time.fixedDeltaTime;
-
-        // Termina a Esquiva/Dash
-        if (dashTimeCounter <= 0)
+        if (dashTimeCounter <= 0f)
         {
-            isDashing = false;
-            isInvincible = false; // Retira invencibilidade
-            rb.linearVelocity = Vector3.zero; // Freia o personagem para n�o deslizar como gelo
+            isDashing    = false;
+            isInvincible = false;
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+            anim.SetBool(HashIsDashing, false);
         }
     }
 }
