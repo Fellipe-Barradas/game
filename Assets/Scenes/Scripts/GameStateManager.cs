@@ -22,6 +22,7 @@ public class GameStateManager : MonoBehaviour
     [Header("Hotkeys")]
     [SerializeField] private Key pauseKey = Key.Escape;
     [SerializeField] private Key inventoryKey = Key.I;
+    [SerializeField] private Key inventoryKeyAlt = Key.Tab;
     [SerializeField] private Key craftingKey = Key.C;
 
     public GameState CurrentState { get; private set; } = GameState.InitialScreen;
@@ -98,7 +99,7 @@ public class GameStateManager : MonoBehaviour
         }
 
         if ((CurrentState == GameState.Playing || CurrentState == GameState.InventoryCrafting) &&
-            (keyboard[inventoryKey].wasPressedThisFrame || keyboard[craftingKey].wasPressedThisFrame))
+            (keyboard[inventoryKey].wasPressedThisFrame || keyboard[inventoryKeyAlt].wasPressedThisFrame || keyboard[craftingKey].wasPressedThisFrame))
         {
             SetState(CurrentState == GameState.Playing ? GameState.InventoryCrafting : GameState.Playing);
         }

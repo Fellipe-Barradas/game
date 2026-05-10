@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+[DefaultExecutionOrder(-200)]
 public class Slot : MonoBehaviour,
     IPointerEnterHandler, IPointerExitHandler,
     IBeginDragHandler, IDragHandler, IEndDragHandler
@@ -26,6 +27,7 @@ public class Slot : MonoBehaviour,
     }
 
     public void SetInventoryUI(InventoryUI ui) => inventoryUI = ui;
+    public void SetAlpha(float alpha) => canvasGroup.alpha = alpha;
 
     public ItemSO GetItem() => heltItem;
     public int GetAmount() => itemAmount;
@@ -65,7 +67,7 @@ public class Slot : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (!HasItem()) { eventData.pointerDrag = null; return; }
+        if (!HasItem() || inventoryUI == null || !inventoryUI.IsInventoryOpen) { eventData.pointerDrag = null; return; }
         inventoryUI.BeginDrag(SlotIndex, heltItem.icon);
         canvasGroup.blocksRaycasts = false;
         canvasGroup.alpha = 0.4f;

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+[DefaultExecutionOrder(-100)]
 public class InventoryUI : MonoBehaviour
 {
     [SerializeField] private GameObject inventorySlotParent;
@@ -10,8 +11,11 @@ public class InventoryUI : MonoBehaviour
     private Slot[] slotsUI;
     private Inventory inventory;
     private int draggedSlotIndex = -1;
+    private int hotbarStartIndex;
+    private int hotbarSize;
 
     public bool IsDragging => draggedSlotIndex >= 0;
+    public bool IsInventoryOpen => gameObject.activeInHierarchy;
 
     private void Awake()
     {
@@ -20,45 +24,45 @@ public class InventoryUI : MonoBehaviour
             ? hotbarSlotParent.GetComponentsInChildren<Slot>(includeInactive: true)
             : new Slot[0];
 
+        hotbarStartIndex = invSlots.Length;
+        hotbarSize = hotSlots.Length;
+
         slotsUI = new Slot[invSlots.Length + hotSlots.Length];
         invSlots.CopyTo(slotsUI, 0);
         hotSlots.CopyTo(slotsUI, invSlots.Length);
 
         for (int i = 0; i < slotsUI.Length; i++)
             slotsUI[i].SlotIndex = i;
-    }
 
-    private void Start()
-    {
         TryHookInventory();
     }
 
     private void OnEnable()
     {
         if (inventory != null)
-        {
-            inventory.OnInventoryChanged += Redraw;
             Redraw();
-        }
     }
 
     private void OnDisable()
     {
-        if (inventory != null) inventory.OnInventoryChanged -= Redraw;
+        draggedSlotIndex = -1;
+        if (dragImage != null) dragImage.enabled = false;
     }
 
     private void TryHookInventory()
     {
         if (inventory != null) return;
 
-        inventory = FindObjectOfType<Inventory>();
+        inventory = FindFirstObjectByType<Inventory>();
         if (inventory != null)
         {
             inventory.Initialize(slotsUI.Length);
+            inventory.SetHotbarInfo(hotbarStartIndex, hotbarSize);
             foreach (var slot in slotsUI)
                 slot.SetInventoryUI(this);
             inventory.OnInventoryChanged += Redraw;
-            Redraw();
+            inventory.OnEquippedChanged += UpdateHotbarOpacity;
+            UpdateHotbarOpacity();
         }
     }
 
@@ -98,6 +102,21 @@ public class InventoryUI : MonoBehaviour
 
         draggedSlotIndex = -1;
         if (dragImage != null) dragImage.enabled = false;
+        UpdateHotbarOpacity();
+    }
+
+    // --- Hotbar ---
+
+    private void UpdateHotbarOpacity()
+    {
+        if (inventory == null || hotbarSize == 0) return;
+        for (int i = 0; i < hotbarSize; i++)
+        {
+            float alpha = i == inventory.EquippedHotbarIndex
+                ? inventory.EquipedOpacity
+                : inventory.NormalOpacity;
+            slotsUI[hotbarStartIndex + i].SetAlpha(alpha);
+        }
     }
 
     // --- Redraw ---

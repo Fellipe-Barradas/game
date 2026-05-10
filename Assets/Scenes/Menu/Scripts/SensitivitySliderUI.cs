@@ -22,7 +22,7 @@ public class SensitivitySliderUI : MonoBehaviour
         PlayerPrefs.SetFloat(ThirdPersonCamera.SENSITIVITY_KEY, value);
         PlayerPrefs.Save();
 
-        var cam = FindObjectOfType<ThirdPersonCamera>();
+        var cam = FindFirstObjectByType<ThirdPersonCamera>();
         if (cam != null) cam.SetSensitivity(value);
     }
 }

@@ -15,5 +15,5 @@ MonoBehaviour:
   itemName: Diamond Sword
   icon: {fileID: 21300000, guid: 430bdf739fa4e1f4fbb10e0c1467fa6e, type: 3}
   maxStackSize: 1
-  itemPrefab: {fileID: 0}
+  itemPrefab: {fileID: 4188580566681762695, guid: cdf2f9270cf046a4db77920057f771a2, type: 3}
   handItemPrefab: {fileID: 0}
