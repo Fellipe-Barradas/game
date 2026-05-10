@@ -17,7 +17,7 @@ public class PlayerHealth : MonoBehaviour
 
         allRenderers = GetComponentsInChildren<Renderer>();
         foreach (Renderer r in allRenderers)
-            originalColors.Add(r.material.color);
+            originalColors.Add(r.material.HasProperty("_Color") ? r.material.color : Color.white);
 
         Invoke(nameof(SincronizarUI), 0.1f);
     }
@@ -43,12 +43,13 @@ public class PlayerHealth : MonoBehaviour
     IEnumerator FlashRed()
     {
         foreach (Renderer r in allRenderers)
-            r.material.color = Color.red;
+            if (r.material.HasProperty("_Color")) r.material.color = Color.red;
 
         yield return new WaitForSeconds(0.1f);
 
         for (int i = 0; i < allRenderers.Length; i++)
-            allRenderers[i].material.color = originalColors[i];
+            if (allRenderers[i].material.HasProperty("_Color"))
+                allRenderers[i].material.color = originalColors[i];
     }
 
     void Die()
