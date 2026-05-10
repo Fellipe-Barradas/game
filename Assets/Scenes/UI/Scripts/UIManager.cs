@@ -9,6 +9,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject inventoryCanvas;
     [SerializeField] private GameObject hotbarCanvas;
     [SerializeField] private GameObject pauseCanvas;
+    [SerializeField] private GameObject gameOverCanvas;
     [SerializeField] private Camera uiCamera;
 
     private void Awake()
@@ -27,11 +28,12 @@ public class UIManager : MonoBehaviour
 
     public void ApplyGameState(GameState state)
     {
-        bool isPaused = state == GameState.Pause || state == GameState.GameOver;
+        bool hideHud = state == GameState.Pause || state == GameState.GameOver;
 
-        hudCanvas.SetActive(!isPaused);
-        inventoryGroupCanvas.SetActive(!isPaused);
+        hudCanvas.SetActive(!hideHud);
+        inventoryGroupCanvas.SetActive(!hideHud);
         inventoryCanvas.SetActive(state == GameState.InventoryCrafting);
-        pauseCanvas.SetActive(isPaused);
+        pauseCanvas.SetActive(state == GameState.Pause);
+        gameOverCanvas.SetActive(state == GameState.GameOver);
     }
 }

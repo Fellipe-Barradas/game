@@ -70,7 +70,6 @@ public class Inventory : MonoBehaviour
     {
         int remaining = amount;
         
-        // 1. tenta empilhar em slots existentes
         foreach (var entry in entries)
         {
             if (entry.item == itemToAdd && entry.amount < itemToAdd.maxStackSize)
@@ -83,7 +82,6 @@ public class Inventory : MonoBehaviour
             }
         }
         
-        // 2. coloca em slots vazios
         if (remaining > 0)
         {
             foreach (var entry in entries)
@@ -181,11 +179,7 @@ public class Inventory : MonoBehaviour
         if (entry.item == null) return;
 
         GameObject prefab = entry.item.itemPrefab;
-        if (prefab == null)
-        {
-            Debug.LogWarning($"[Inventory] Item '{entry.item.itemName}' não tem itemPrefab configurado.");
-            return;
-        }
+        if (prefab == null) return;
 
         Vector3 dropPos = transform.position + transform.forward * 1.5f + Vector3.up * 0.5f;
         GameObject dropped = Instantiate(prefab, dropPos, Quaternion.identity);
@@ -204,12 +198,7 @@ public class Inventory : MonoBehaviour
     {
         if (Keyboard.current.eKey.wasPressedThisFrame)
         {
-            if (lookedAtItem == null)
-            {
-                Debug.Log("[Inventory] E pressionado mas nenhum item está em foco.");
-                return;
-            }
-            Debug.Log($"[Inventory] Coletando: {lookedAtItem.item?.itemName}");
+            if (lookedAtItem == null) return;
             AddItem(lookedAtItem.item, lookedAtItem.amount);
             Destroy(lookedAtItem.gameObject);
             lookedAtItem = null;
@@ -220,67 +209,63 @@ public class Inventory : MonoBehaviour
 
     private void DetectLookedAtItem()
     {
+        string currentLog = "";
+
+        // LIMPEZA SEGURA: Evita o MissingReferenceException
         if (lookedAtRenderer != null)
         {
-            lookedAtRenderer.material = originalMaterial;
-            lookedAtRenderer = null;
-            originalMaterial = null;
-            lookedAtItem = null;
+            try {
+                lookedAtRenderer.material = originalMaterial;
+            } catch { }
         }
+
+        lookedAtRenderer = null;
+        originalMaterial = null;
+        lookedAtItem = null;
 
         Camera cam = Camera.main;
-        if (cam == null)
-        {
-            Debug.LogWarning("[Inventory] Camera.main é null! Certifique-se que a câmera tem a tag 'MainCamera'.");
-            return;
-        }
+        if (cam == null) return;
 
         Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
-        Debug.DrawRay(ray.origin, ray.direction * (Vector3.Distance(cam.transform.position, transform.position) + pickupRange), Color.yellow);
+        float maxDist = pickupRange + 2f; 
+        RaycastHit[] hits = Physics.RaycastAll(ray, maxDist, pickupMask);
+        Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
-        RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, pickupMask);
-        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
-
-        string log = "";
         foreach (var hit in hits)
         {
-            if (System.Array.IndexOf(selfColliders, hit.collider) >= 0)
+            if (hit.collider == null || Array.IndexOf(selfColliders, hit.collider) >= 0)
                 continue;
 
             if (Vector3.Distance(transform.position, hit.point) > pickupRange)
             {
-                log = $"[Inventory] Hit '{hit.collider.gameObject.name}' fora do alcance ({Vector3.Distance(transform.position, hit.point):F2}m > {pickupRange}m).";
+                currentLog = $"[Inventory] Hit '{hit.collider.name}' fora do alcance.";
                 break;
             }
 
             Item item = hit.collider.GetComponentInParent<Item>();
             if (item == null)
             {
-                log = $"[Inventory] Hit '{hit.collider.gameObject.name}' — sem Item.";
+                currentLog = $"[Inventory] Hit '{hit.collider.name}' — sem Item.";
                 break;
             }
 
             Renderer rend = item.GetComponentInChildren<Renderer>();
-            if (rend == null)
+            if (rend != null)
             {
-                log = $"[Inventory] Item '{item.name}' sem Renderer.";
-                break;
+                originalMaterial = rend.material;
+                rend.material = highLightMaterial;
+                lookedAtRenderer = rend;
+                lookedAtItem = item;
+                currentLog = $"[Inventory] Destacando: '{item.name}'";
             }
-
-            originalMaterial = rend.material;
-            rend.material = highLightMaterial;
-            lookedAtRenderer = rend;
-            lookedAtItem = item;
-            log = $"[Inventory] Destacando: '{item.name}'";
             break;
         }
 
-        if (log != lastRaycastLog)
+        if (currentLog != lastRaycastLog)
         {
-            if (log == "") log = "[Inventory] Nada em foco.";
-            Debug.Log(log);
-            lastRaycastLog = log;
+            if (currentLog == "") currentLog = "[Inventory] Nada em foco.";
+            Debug.Log(currentLog);
+            lastRaycastLog = currentLog;
         }
     }
-
 }
