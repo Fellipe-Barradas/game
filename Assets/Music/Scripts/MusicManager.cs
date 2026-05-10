@@ -61,6 +61,7 @@ public class MusicManager : MonoBehaviour
     {
         SceneMusicConfig config = FindConfigForScene(scene.name);
         if (config != null) PlayConfig(config);
+        else StopMusic();
     }
 
     private SceneMusicConfig FindConfigForScene(string sceneName)

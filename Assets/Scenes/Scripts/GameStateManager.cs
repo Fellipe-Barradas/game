@@ -18,6 +18,7 @@ public class GameStateManager : MonoBehaviour
     [Header("Scenes")]
     [SerializeField] private string menuSceneName = "MenuInicial";
     [SerializeField] private string gameplaySceneName = "MainScene";
+    [SerializeField] private string uiSceneName = "UIScene";
 
     [Header("Hotkeys")]
     [SerializeField] private Key pauseKey = Key.Escape;
@@ -147,13 +148,34 @@ public class GameStateManager : MonoBehaviour
         if (scene.name == menuSceneName)
         {
             CurrentState = GameState.InitialScreen;
+            ApplyState(CurrentState);
         }
-        else if (scene.name == gameplaySceneName && CurrentState == GameState.InitialScreen)
+        else if (scene.name == gameplaySceneName)
         {
-            CurrentState = GameState.Playing;
+            if (CurrentState == GameState.InitialScreen)
+                CurrentState = GameState.Playing;
+
+            EnsureUISceneLoaded();
+        }
+        else if (scene.name == uiSceneName)
+        {
+            ApplyState(CurrentState);
+        }
+    }
+
+    private void EnsureUISceneLoaded()
+    {
+        for (int i = 0; i < SceneManager.sceneCount; i++)
+        {
+            if (SceneManager.GetSceneAt(i).name == uiSceneName)
+            {
+                ApplyState(CurrentState);
+                return;
+            }
         }
 
-        ApplyState(CurrentState);
+        SceneManager.LoadSceneAsync(uiSceneName, LoadSceneMode.Additive);
+        // ApplyState será chamado quando UIScene terminar de carregar (OnSceneLoaded)
     }
 
     private void ApplyState(GameState state)
