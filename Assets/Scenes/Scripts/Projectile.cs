@@ -1,48 +1,42 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
-public class Projectile : MonoBehaviour
+public class ProjectileScript : MonoBehaviour
 {
     [Header("Configurações do Projétil")]
     public float speed = 20f;
     public float lifeTime = 5f;
-    public int damage = 10;
     
-    [Header("Efeitos Visuais")]
-    public GameObject impactEffectPrefab; // Partícula ao atingir algo (Opcional)
-
-    private Rigidbody rb;
+    [HideInInspector]
+    public int damage;
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        
-        // Dispara o projétil para a frente
-        rb.linearVelocity = transform.forward * speed;
-
-        // Destrói o projétil após um tempo para não pesar a memória
         Destroy(gameObject, lifeTime);
+    }
+
+    private void Update()
+    {
+        transform.Translate(Vector3.forward * speed * Time.deltaTime);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        // Ignora colisão com o próprio jogador
+        Debug.Log("[PROJECTILE] Colidiu com: " + other.name);
         if (other.CompareTag("Player")) return;
 
-        Debug.Log("Projétil atingiu: " + other.name);
+        EnemyDummy enemy = other.GetComponent<EnemyDummy>();
+        
+        if (enemy == null) enemy = other.GetComponentInParent<EnemyDummy>();
 
-        // Se o objeto tiver script de vida, cause dano
-        // if (other.TryGetComponent<EnemyHealth>(out EnemyHealth enemy)) {
-        //     enemy.TakeDamage(damage);
-        // }
-
-        // Feedback visual
-        if (impactEffectPrefab != null)
+        if (enemy != null)
         {
-            Instantiate(impactEffectPrefab, transform.position, Quaternion.identity);
+            Debug.Log($"[PROJECTILE] Acertou inimigo: {enemy.name} - Dano: {damage}");
+            enemy.TakeDamage(damage);
         }
 
-        // Destrói o projétil ao bater em algo
-        Destroy(gameObject);
+        if (!other.isTrigger)
+        {
+            Destroy(gameObject);
+        }
     }
 }

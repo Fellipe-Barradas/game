@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Animator))]
 public class FireKnightController : MonoBehaviour
 {
-    public PlayerClass currentClass = PlayerClass.Espadachim;
+    public PlayerClass currentClass = PlayerClass.Arqueiro;
     [Header("Referências de Câmera")]
     [SerializeField] private ThirdPersonCamera cameraRig;
     [SerializeField] private Transform cameraPivot;

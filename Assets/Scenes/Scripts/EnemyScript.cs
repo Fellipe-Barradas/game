@@ -91,7 +91,6 @@ public class EnemyDummy : MonoBehaviour
         alreadyAttacked = false; 
     }
 
-    // FUNÇÃO DE SEGURANÇA: Procura o script de combate de forma profunda
     void TentarDarDano()
     {
         // Tenta no objeto tocado, depois no Pai, depois nos Filhos

@@ -97,8 +97,6 @@ public class Inventory : MonoBehaviour
             }
         }
         
-        if (remaining > 0)
-            Debug.Log($"Inventário cheio, sobraram {remaining} de {itemToAdd.itemName}");
         
         OnInventoryChanged?.Invoke();
     }
@@ -264,7 +262,7 @@ public class Inventory : MonoBehaviour
         if (currentLog != lastRaycastLog)
         {
             if (currentLog == "") currentLog = "[Inventory] Nada em foco.";
-            Debug.Log(currentLog);
+
             lastRaycastLog = currentLog;
         }
     }
