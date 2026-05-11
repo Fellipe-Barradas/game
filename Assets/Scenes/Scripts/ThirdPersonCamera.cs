@@ -24,6 +24,13 @@ public class ThirdPersonCamera : MonoBehaviour
     private float currentPitch;
     private float currentDistance;
 
+    [Header("Configurações de Mira (Zoom)")] // NOVO BLOCO
+    [SerializeField] private float aimDistance = 2f; // Distância mais próxima
+    [SerializeField] private Vector3 aimOffset = new Vector3(0.8f, 0f, 0f); // Desloca para a direita (ombro)
+    [SerializeField] private float zoomTransitionSpeed = 2f; // Velocidade da transição do zoom
+
+private bool isAimingCam = false; // Controla o estado de zoom
+
     // Consumido por FireKnightController no LateUpdate
     public Quaternion YawRotation => Quaternion.Euler(0f, currentYaw, 0f);
     public float CurrentYaw => currentYaw;
@@ -41,7 +48,10 @@ public class ThirdPersonCamera : MonoBehaviour
         currentDistance = defaultDistance;
         mouseSensitivity = PlayerPrefs.GetFloat(SENSITIVITY_KEY, mouseSensitivity);
     }
-
+    public void SetAimingCamera(bool aiming)
+{
+    isAimingCam = aiming;
+}
     public void SetSensitivity(float value)
     {
         mouseSensitivity = value;
@@ -70,19 +80,28 @@ public class ThirdPersonCamera : MonoBehaviour
         currentPitch  = Mathf.Clamp(currentPitch, minPitch, maxPitch);
     }
     private void HandleCameraCollision()
+{
+    // 1. Define a distância alvo baseada no estado de mira
+    float targetDistance = isAimingCam ? aimDistance : defaultDistance;
+
+    // 2. Verifica colisão
+    if (Physics.SphereCast(cameraPivot.position, cameraRadius, -cameraPivot.forward,
+            out RaycastHit hit, targetDistance, collisionLayers))
     {
-        float targetDistance = defaultDistance;
-
-        if (Physics.SphereCast(cameraPivot.position, cameraRadius, -cameraPivot.forward,
-                out RaycastHit hit, defaultDistance, collisionLayers))
-            targetDistance = Mathf.Max(hit.distance - 0.1f, 0.5f);
-
-        currentDistance = Mathf.Lerp(currentDistance, targetDistance, collisionSmoothSpeed * Time.deltaTime);
-
-        // Posiciona câmera ao longo do eixo local -Z do CameraPivot
-        transform.localPosition = new Vector3(0f, 0f, -currentDistance);
-
-        // Câmera olha para o pivot independentemente do pitch herdado
-        transform.LookAt(cameraPivot.position);
+        targetDistance = Mathf.Max(hit.distance - 0.1f, 0.5f);
     }
+
+    // 3. Suaviza a distância (Zoom In/Out)
+    currentDistance = Mathf.Lerp(currentDistance, targetDistance, collisionSmoothSpeed * Time.deltaTime);
+
+    // 4. Calcula o deslocamento para o ombro (Offset)
+    Vector3 targetOffset = isAimingCam ? aimOffset : Vector3.zero;
+    
+    // 5. Aplica a posição final (Deslocamento X + Zoom no eixo Z local)
+    Vector3 desiredLocalPosition = new Vector3(targetOffset.x, targetOffset.y, -currentDistance);
+    transform.localPosition = Vector3.Lerp(transform.localPosition, desiredLocalPosition, zoomTransitionSpeed * Time.deltaTime);
+
+    // 6. Faz a câmera olhar para o pivot (ajustado pelo offset para não entortar a visão)
+    transform.LookAt(cameraPivot.position + transform.right * targetOffset.x);
+}
 }

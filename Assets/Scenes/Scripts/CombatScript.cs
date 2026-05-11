@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
 public class CombatScript : MonoBehaviour
@@ -25,6 +26,18 @@ public class CombatScript : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip blockSound;
     public AudioClip hurtSound;
+
+    [Header("Mira e Câmera (Arqueiro)")]
+    public GameObject crosshairUI; // Arraste a UI da mira aqui
+    public ThirdPersonCamera camScript; // Arraste a Câmera Principal aqui
+
+    public Image chargeBarFill; // NOVO: A imagem que vai "encher"
+    public CanvasGroup crosshairCanvasGroup; // NOVO: Para fazer a mira aparecer suavemente
+
+    [Header("Configuração de Carga do Arco")]
+    public float bowChargeDuration = 1.2f; // Tempo em segundos para a barra encher 100%
+    public float fadeSpeed = 5f; // Velocidade em que a mira surge na tela
+    private float currentChargeTime = 0f;
 
     public bool isBlocking { get; private set; }
 
@@ -70,38 +83,87 @@ public class CombatScript : MonoBehaviour
         }
     }
 
-    private void HandleArcherInput(Mouse mouse)
+  private void HandleArcherInput(Mouse mouse)
     {
-        if (mouse.leftButton.wasPressedThisFrame && !isChargingShot)
+        // 1. INÍCIO DA MIRA (Clica)
+        if (mouse.leftButton.wasPressedThisFrame && !isChargingShot && Time.time >= nextAttackTime)
         {
             isChargingShot = true;
+            currentChargeTime = 0f; // Começa a carga do zero
             controller.SetAiming(true);
+
+            // Liga a UI, mas deixa invisível para o Fade fazer o trabalho
+            if (crosshairUI != null) crosshairUI.SetActive(true);
+            if (crosshairCanvasGroup != null) crosshairCanvasGroup.alpha = 0f; 
+            if (chargeBarFill != null) chargeBarFill.fillAmount = 0f;
+            
+            if (camScript != null) camScript.SetAimingCamera(true);
 
             if (audioSource != null && currentWeapon?.swingSound != null)
                 audioSource.PlayOneShot(currentWeapon.swingSound);
         }
 
-        if (mouse.leftButton.wasReleasedThisFrame && isChargingShot)
+        // 2. SEGURANDO O BOTÃO (Carregando)
+        if (isChargingShot)
         {
-            isChargingShot = false;
-            controller.SetAiming(false);
+            // Aumenta o tempo de carga
+            currentChargeTime += Time.deltaTime;
             
-            float rate = currentWeapon != null ? currentWeapon.attackRate : 1f;
-            float animDuration = 1f / rate;
-            
-            controller.TriggerAttackAnimation();
-            nextAttackTime = Time.time + animDuration;
+            // Preenche a barra de progresso (de 0 a 1)
+            if (chargeBarFill != null)
+                chargeBarFill.fillAmount = Mathf.Clamp01(currentChargeTime / bowChargeDuration);
+
+            // Faz a mira aparecer lentamente (Fade In)
+            if (crosshairCanvasGroup != null)
+                crosshairCanvasGroup.alpha = Mathf.Lerp(crosshairCanvasGroup.alpha, 1f, Time.deltaTime * fadeSpeed);
         }
 
+        // 3. SOLTA O BOTÃO (Momento de decisão)
+        if (mouse.leftButton.wasReleasedThisFrame && isChargingShot)
+        {
+            // O jogador só pode atirar SE completou o tempo da barra
+            if (currentChargeTime >= bowChargeDuration)
+            {
+                ExecuteShot();
+            }
+            else
+            {
+                // Se soltou antes de encher, o tiro é cancelado!
+                CancelAim();
+            }
+        }
+
+        // 4. CANCELAR (Botão Direito)
         if (mouse.rightButton.wasPressedThisFrame && isChargingShot)
             CancelAim();
+    }
+
+    private void ExecuteShot()
+    {
+        isChargingShot = false;
+        controller.SetAiming(false);
+        
+        // Esconde UI e Zoom
+        if (crosshairUI != null) crosshairUI.SetActive(false);
+        if (camScript != null) camScript.SetAimingCamera(false);
+        
+        float rate = currentWeapon != null ? currentWeapon.attackRate : 1f;
+        float animDuration = 1f / rate;
+        
+        controller.TriggerAttackAnimation();
+        nextAttackTime = Time.time + animDuration; // Cooldown após atirar
     }
 
     private void CancelAim()
     {
         if (!isChargingShot) return;
         isChargingShot = false;
+        currentChargeTime = 0f;
         controller.SetAiming(false);
+        
+        // Esconde UI e Zoom
+        if (crosshairUI != null) crosshairUI.SetActive(false);
+        if (camScript != null) camScript.SetAimingCamera(false);
     }
 
     private void Attack()

@@ -16,6 +16,7 @@ public class FireKnightController : MonoBehaviour
     [Header("Movimentação e Pulo")]
     public float walkSpeed      = 5f;
     public float runSpeed       = 8f;
+    public float aimSpeed       = 2f;
     [SerializeField] private float rotationSpeed = 15f;
     public float jumpForce      = 6f;
     public Transform groundCheck;
@@ -282,7 +283,8 @@ public class FireKnightController : MonoBehaviour
 
     private void MovePlayer()
     {
-        float speed = isSprinting ? runSpeed : walkSpeed;
+        float speed = isAimingState ? aimSpeed : (isSprinting ? runSpeed : walkSpeed);
+    
         rb.linearVelocity = new Vector3(
             moveDirection.x * speed,
             rb.linearVelocity.y,
