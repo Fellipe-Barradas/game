@@ -187,23 +187,17 @@ public class FireKnightController : MonoBehaviour
     // Modifique a rotação para ser imediata se estiver atirando
     private void ApplyYawRotation()
     {
-        if (cameraRig == null || cameraPivot == null) return;
+        if (cameraRig == null) return;
 
-        // Se estiver atacando ou mirando, força o personagem a olhar para a frente da câmera
+        // Se estiver atacando ou mirando, usa a rotação horizontal da câmera (Yaw)
+        // Multiplicamos por 2f para o corpo acompanhar o mouse mais rapidamente durante a mira
         if (isAttacking || anim.GetBool(HashIsAiming))
         {
-            Vector3 cameraForward = cameraPivot.forward;
-            cameraForward.y = 0f; // Mantém a rotação apenas no eixo Y
-            
-            if (cameraForward != Vector3.zero)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(cameraForward);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * 2f * Time.deltaTime);
-            }
+            transform.rotation = Quaternion.Slerp(transform.rotation, cameraRig.YawRotation, rotationSpeed * 2f * Time.deltaTime);
         }
         else
         {
-            // Rotação normal de movimento (o que você já tinha)
+            // Rotação normal quando está apenas andando
             transform.rotation = Quaternion.Slerp(transform.rotation, cameraRig.YawRotation, rotationSpeed * Time.deltaTime);
         }
     }

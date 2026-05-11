@@ -64,12 +64,11 @@ public class ThirdPersonCamera : MonoBehaviour
         var mouse = Mouse.current;
         if (mouse == null) return;
 
-        // mouse.delta já é por frame — sem Time.deltaTime para manter FPS-independente
+        // Isso permite girar para os lados (Yaw) e para cima/baixo (Pitch)
         currentYaw   += mouse.delta.x.ReadValue() * mouseSensitivity;
         currentPitch -= mouse.delta.y.ReadValue() * mouseSensitivity;
         currentPitch  = Mathf.Clamp(currentPitch, minPitch, maxPitch);
     }
-
     private void HandleCameraCollision()
     {
         float targetDistance = defaultDistance;

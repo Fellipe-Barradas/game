@@ -9132,7 +9132,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   target: {fileID: 128534704}
   cameraPivot: {fileID: 2109276359}
-  mouseSensitivity: 3
+  mouseSensitivity: 1
   minPitch: -20
   maxPitch: 45
   collisionLayers:
