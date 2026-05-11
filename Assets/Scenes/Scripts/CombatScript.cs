@@ -115,16 +115,21 @@ public class CombatScript : MonoBehaviour
 
     public void ExecuteAttackEvent()
     {
+         Debug.Log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         if (controller == null) return;
 
-        if (controller.currentClass == PlayerClass.Arqueiro)
+        if (controller.currentClass == PlayerClass.Arqueiro){
+            Debug.Log("ccccccccccccccccccccccccccccccc");
             ShootProjectile();
+        }
         else
+            Debug.Log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
             PerformMeleeAttack();
     }
 
     private void PerformMeleeAttack()
     {
+       
         if (meleeAttackPoint == null) return;
 
         Vector3 hitboxSize = controller.currentClass == PlayerClass.Espadachim
@@ -134,11 +139,15 @@ public class CombatScript : MonoBehaviour
         Vector3 boxCenter = meleeAttackPoint.position + meleeAttackPoint.forward * (hitboxSize.z / 2f);
 
         Collider[] hits = Physics.OverlapBox(boxCenter, hitboxSize / 2f, meleeAttackPoint.rotation, enemyLayers);
+        
+        Debug.Log($"[MELEE ATTACK] Acertou {hits.Length} inimigo(s)!");
 
         int damage = currentWeapon != null ? currentWeapon.attackDamage : 10;
 
         foreach (Collider enemy in hits)
         {
+            Debug.Log($"[HIT] Inimigo atingido: {enemy.name} - Dano: {damage}");
+            
             if (audioSource != null && currentWeapon?.hitSound != null)
                 audioSource.PlayOneShot(currentWeapon.hitSound);
 
@@ -153,7 +162,16 @@ public class CombatScript : MonoBehaviour
     private void ShootProjectile()
     {
         if (rangedFirePoint == null || projectilePrefab == null) return;
-        Instantiate(projectilePrefab, rangedFirePoint.position, rangedFirePoint.rotation);
+        
+        // Instancia a flecha e guarda a referência dela na variável 'projectile'
+        GameObject projectile = Instantiate(projectilePrefab, rangedFirePoint.position, rangedFirePoint.rotation);
+        
+        // Pega o script da flecha recém-criada e passa o valor do dano
+        ProjectileScript projScript = projectile.GetComponent<ProjectileScript>();
+        if (projScript != null)
+        {
+            projScript.damage = currentWeapon != null ? currentWeapon.attackDamage : 10;
+        }
     }
 
     public void TakeDamage(int damage)

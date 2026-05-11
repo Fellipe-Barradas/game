@@ -34701,6 +34701,13 @@ PrefabInstance:
       propertyPath: m_AnimatePhysics
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
+      propertyPath: m_WarningMessage
+      value: "\nBinding warning: Some generic clip(s) animate transforms that are
+        already bound by a Humanoid avatar. These transforms can only be changed
+        by Humanoid clips.\n\tTransform 'spine_02'\n\tTransform 'spine_01'\n\tTransform
+        'spine_02'\n\tTransform 'spine_01'\n\tTransform 'spine_02'\n\tTransform 'spine_01'"
+      objectReference: {fileID: 0}
     - target: {fileID: 5949200829620077376, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -34818,7 +34825,7 @@ GameObject:
   - component: {fileID: 1730095064}
   - component: {fileID: 1730095063}
   - component: {fileID: 1730095062}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -37738,7 +37745,7 @@ MonoBehaviour:
   enemyLayers:
     serializedVersion: 2
     m_Bits: 64
-  swordAttackRange: 2
+  swordAttackRange: 3
   swordAttackWidth: 3
   lanceAttackRange: 4
   lanceAttackWidth: 1
