@@ -47,10 +47,20 @@ public class CombatScript : MonoBehaviour
 
     private void Start()
     {
-        // Removida a inicialização de vida daqui, pois agora está no PlayerHealth
         controller = GetComponent<FireKnightController>();
-    }
 
+        // GARANTE QUE A MIRA COMECE ESCONDIDA
+        if (crosshairUI != null) 
+        {
+            crosshairUI.SetActive(false);
+        }
+        
+        // Se estiver usando o Canvas Group para o efeito suave, comece com alpha 0
+        if (crosshairCanvasGroup != null)
+        {
+            crosshairCanvasGroup.alpha = 0f;
+        }
+    }
     private void Update()
     {
         GameStateManager stateManager = GameStateManager.Instance;

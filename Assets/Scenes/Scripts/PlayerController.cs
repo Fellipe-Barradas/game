@@ -87,6 +87,10 @@ public class FireKnightController : MonoBehaviour
     {
         isAimingState = value;
         anim.SetBool(HashIsAiming, value);
+        if (!value && rig != null)
+        {
+            rig.weight = 0f;
+        }
     }
 
     private void Start()
