@@ -115,15 +115,12 @@ public class CombatScript : MonoBehaviour
 
     public void ExecuteAttackEvent()
     {
-         Debug.Log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         if (controller == null) return;
 
         if (controller.currentClass == PlayerClass.Arqueiro){
-            Debug.Log("ccccccccccccccccccccccccccccccc");
             ShootProjectile();
         }
         else
-            Debug.Log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
             PerformMeleeAttack();
     }
 

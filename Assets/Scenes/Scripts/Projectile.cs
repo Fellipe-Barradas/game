@@ -21,6 +21,7 @@ public class ProjectileScript : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("[PROJECTILE] Colidiu com: " + other.name);
         if (other.CompareTag("Player")) return;
 
         EnemyDummy enemy = other.GetComponent<EnemyDummy>();
@@ -29,6 +30,7 @@ public class ProjectileScript : MonoBehaviour
 
         if (enemy != null)
         {
+            Debug.Log($"[PROJECTILE] Acertou inimigo: {enemy.name} - Dano: {damage}");
             enemy.TakeDamage(damage);
         }
 
