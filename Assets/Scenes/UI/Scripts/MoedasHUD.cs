@@ -5,21 +5,20 @@ public class MoedasHUD : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI gold;
     [SerializeField] private TextMeshProUGUI silver;
+    [SerializeField] private TextMeshProUGUI fragmentos; // Novo slot para a interface
     
     private void OnEnable()
     {
-        // se o gerenciador já existe, conecta agora
         if (GerenciadorMoedas.Instancia != null)
             Conectar();
         else
-            // senão, tenta de novo no próximo frame
             Invoke(nameof(TentarConectar), 0.1f);
     }
     
     private void OnDisable()
     {
         if (GerenciadorMoedas.Instancia != null)
-            GerenciadorMoedas.Instancia.OnMoedasMudaram -= AtualizarTexto;
+            GerenciadorMoedas.Instancia.OnRecursosMudaram -= AtualizarTexto; // Nome atualizado
     }
     
     private void TentarConectar()
@@ -30,13 +29,15 @@ public class MoedasHUD : MonoBehaviour
     private void Conectar()
     {
         var g = GerenciadorMoedas.Instancia;
-        g.OnMoedasMudaram += AtualizarTexto;
-        AtualizarTexto(g.MoedasDePrata, g.MoedasDeOuro); // valor inicial
+        g.OnRecursosMudaram += AtualizarTexto; // Nome atualizado
+        AtualizarTexto(g.MoedasDePrata, g.MoedasDeOuro, g.Fragmentos); // Agora envia os 3
     }
     
-    private void AtualizarTexto(int prata, int ouro)
+    private void AtualizarTexto(int prata, int ouro, int qtdFragmentos)
     {
-        gold.text = $"{ouro}";
-        silver.text = $"{prata}";
+        // O if (!= null) garante que o jogo não trave se você ainda não tiver criado o UI dos Fragmentos
+        if (gold != null) gold.text = $"{ouro}";
+        if (silver != null) silver.text = $"{prata}";
+        if (fragmentos != null) fragmentos.text = $"{qtdFragmentos}"; 
     }
 }

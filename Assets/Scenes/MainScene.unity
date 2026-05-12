@@ -3384,6 +3384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GerenciadorMoedas
   moedasDePrata: 0
+  fragmentos: 0
   moedasDeOuro: 0
 --- !u!64 &75088448
 MeshCollider:
@@ -34831,7 +34832,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1730095061
 Transform:
   m_ObjectHideFlags: 0
