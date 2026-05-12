@@ -6,6 +6,7 @@ public class ClassCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 {
     [Header("Identificação")]
     public PlayerClass playerClass;
+    public WeaponData classWeapon;
 
     [Header("Referências")]
     [SerializeField] private RectTransform cardVisual; // o filho CardVisual que anima

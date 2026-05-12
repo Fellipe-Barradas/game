@@ -36,7 +36,10 @@ public class ClassSelectionManager : MonoBehaviour
     {
         if (selectedCard == null) return;
 
+        // Salva a classe E a arma no StateManager!
         GameStateManager.Instance.SelectedClass = selectedCard.playerClass;
+        GameStateManager.Instance.SelectedWeapon = selectedCard.classWeapon; // Adicione isso no seu GameStateManager
+
         GameStateManager.Instance.StartGameplay();
     }
 
@@ -49,4 +52,4 @@ public class ClassSelectionManager : MonoBehaviour
 
         menuController.IrParaMenuInicial();
     }
-}
+}   
