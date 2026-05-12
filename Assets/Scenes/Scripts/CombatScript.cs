@@ -257,18 +257,39 @@ public class CombatScript : MonoBehaviour
     private void ShootProjectile()
     {
         if (rangedFirePoint == null || projectilePrefab == null) return;
+
+        // 1. Cria um raio saindo do centro exato da tela da câmera
+        Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        Vector3 targetPoint;
+
+        // 2. A MÁGICA AQUI: Diz para o Raycast acertar tudo, EXCETO a Layer "Player"
+        // Certifique-se de que o nome da sua Layer está escrito exatamente assim (maiúsculas/minúsculas importam)
+        int aimLayerMask = ~LayerMask.GetMask("player");
+
+        // 3. Faz o Raycast passando a nossa aimLayerMask como filtro
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, aimLayerMask))
+        {
+            targetPoint = hit.point; // O alvo é a parede/chão/inimigo
+            Debug.Log("<color=red>[MIRA] O raio da câmera bateu em: </color>" + hit.collider.name);
+        }
+        else
+        {
+            targetPoint = ray.GetPoint(100f); 
+        }
+
+        // 4. Calcula a direção exata
+        Vector3 directionToTarget = targetPoint - rangedFirePoint.position;
+
+        // 5. Instancia a flecha olhando para o alvo
+        GameObject projectile = Instantiate(projectilePrefab, rangedFirePoint.position, Quaternion.LookRotation(directionToTarget));
         
-        // Instancia a flecha e guarda a referência dela na variável 'projectile'
-        GameObject projectile = Instantiate(projectilePrefab, rangedFirePoint.position, rangedFirePoint.rotation);
-        
-        // Pega o script da flecha recém-criada e passa o valor do dano
+        // Passa o dano para a flecha
         ProjectileScript projScript = projectile.GetComponent<ProjectileScript>();
         if (projScript != null)
         {
             projScript.damage = currentWeapon != null ? currentWeapon.attackDamage : 10;
         }
     }
-
     public void TakeDamage(int damage)
     {
         if (isBlocking)
