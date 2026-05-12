@@ -3742,6 +3742,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClassCard
   playerClass: 1
+  classWeapon: {fileID: 11400000, guid: 1e554fcafe8c3474ca05e5e25e05b422, type: 2}
   cardVisual: {fileID: 1596707428}
   background: {fileID: 452521077}
   border: {fileID: 452521074}
@@ -7626,6 +7627,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClassCard
   playerClass: 0
+  classWeapon: {fileID: 11400000, guid: 48668a5de8653e04399582029218709b, type: 2}
   cardVisual: {fileID: 231341769}
   background: {fileID: 959981033}
   border: {fileID: 959981038}
@@ -7689,7 +7691,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.28733766, y: 0.279}
   m_AnchorMax: {x: 0.887, y: 0.4111989}
-  m_AnchoredPosition: {x: 7.5300293, y: -117.179634}
+  m_AnchoredPosition: {x: 7.5300293, y: -117.17964}
   m_SizeDelta: {x: -16.733, y: -1.759}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &965237729
@@ -14641,6 +14643,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClassCard
   playerClass: 2
+  classWeapon: {fileID: 11400000, guid: 0d5acb1b30886a84dac43aaa778f24f4, type: 2}
   cardVisual: {fileID: 246698231}
   background: {fileID: 1854051589}
   border: {fileID: 1854051586}

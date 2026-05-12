@@ -12,7 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 941ee354add44a5459b4f5ab1c65636b, type: 3}
   m_Name: Arco
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
-  weaponName: Espada
+  weaponName: Arco
+  weaponPrefab: {fileID: 7279236981667502247, guid: e11ae5680dc07ca44a361f44196086a0, type: 3}
+  menuPositionOffset: {x: 0, y: 0, z: 0}
+  menuRotationOffset: {x: 0, y: 0, z: 0}
+  handPositionOffset: {x: 0, y: 0, z: 0}
+  handRotationOffset: {x: 0, y: 0, z: 0}
   attackDamage: 20
   attackRate: 1.5
   attackRange: 1.5

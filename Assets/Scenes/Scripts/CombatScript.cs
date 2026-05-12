@@ -6,6 +6,7 @@ public class CombatScript : MonoBehaviour
 {
     [Header("Arma Equipada")]
     public WeaponData currentWeapon;
+    public Transform weaponHolder;
 
     [Header("Configuração de Acerto — Corpo a Corpo")]
     public Transform meleeAttackPoint;
@@ -49,18 +50,28 @@ public class CombatScript : MonoBehaviour
     {
         controller = GetComponent<FireKnightController>();
 
-        // GARANTE QUE A MIRA COMECE ESCONDIDA
-        if (crosshairUI != null) 
+        // 1. Esconde a UI da mira por padrão
+        if (crosshairUI != null) crosshairUI.SetActive(false);
+        if (crosshairCanvasGroup != null) crosshairCanvasGroup.alpha = 0f;
+
+        // 2. PEGA A ARMA DO MENU
+        if (GameStateManager.Instance != null && GameStateManager.Instance.SelectedWeapon != null)
         {
-            crosshairUI.SetActive(false);
+            currentWeapon = GameStateManager.Instance.SelectedWeapon;
         }
-        
-        // Se estiver usando o Canvas Group para o efeito suave, comece com alpha 0
-        if (crosshairCanvasGroup != null)
+
+        // 3. CRIA O MODELO 3D NA MÃO
+        if (currentWeapon != null && currentWeapon.weaponPrefab != null && weaponHolder != null)
         {
-            crosshairCanvasGroup.alpha = 0f;
+            // Instancia a arma como filha do weaponHolder (osso da mão)
+            GameObject arma = Instantiate(currentWeapon.weaponPrefab, weaponHolder);
+            
+            // Aplica a "pegada" configurada lá no ScriptableObject
+            arma.transform.localPosition = currentWeapon.handPositionOffset;
+            arma.transform.localRotation = Quaternion.Euler(currentWeapon.handRotationOffset);
         }
     }
+    
     private void Update()
     {
         GameStateManager stateManager = GameStateManager.Instance;
