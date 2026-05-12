@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: "Lan\xE7a"
   weaponPrefab: {fileID: 919132149155446097, guid: 67dca66dcdf72574e89f49787f79655f, type: 3}
-  menuPositionOffset: {x: 0, y: 0, z: 0}
+  menuPositionOffset: {x: 10, y: 10, z: 10}
   menuRotationOffset: {x: 0, y: 0, z: 0}
-  handPositionOffset: {x: 0, y: 0, z: 0}
-  handRotationOffset: {x: 0, y: 0, z: 0}
+  handPositionOffset: {x: -0.058, y: 0.014, z: 0.091}
+  handRotationOffset: {x: 76, y: 0, z: 0}
   attackDamage: 20
   attackRate: 1.5
   attackRange: 1.5

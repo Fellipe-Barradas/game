@@ -12,6 +12,7 @@ public class WeaponData : ScriptableObject
     public Vector3 menuRotationOffset = Vector3.zero; // Ajuste fino de rotação na tela de seleção
 
     [Header("Visual e Pegada (Gameplay)")]
+    public bool equipInLeftHand = false;
     public Vector3 handPositionOffset = Vector3.zero; // Como fica na mão do personagem
     public Vector3 handRotationOffset = Vector3.zero;
 

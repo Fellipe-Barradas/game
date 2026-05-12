@@ -6,7 +6,10 @@ public class CombatScript : MonoBehaviour
 {
     [Header("Arma Equipada")]
     public WeaponData currentWeapon;
-    public Transform weaponHolder;
+    
+    [Header("Ossos das Mãos")]
+    public Transform rightHandHolder; // Arraste a mão Direita (Espada/Lança)
+    public Transform leftHandHolder;  // Arraste a mão Esquerda (Arco)
 
     [Header("Configuração de Acerto — Corpo a Corpo")]
     public Transform meleeAttackPoint;
@@ -61,14 +64,26 @@ public class CombatScript : MonoBehaviour
         }
 
         // 3. CRIA O MODELO 3D NA MÃO
-        if (currentWeapon != null && currentWeapon.weaponPrefab != null && weaponHolder != null)
+        if (currentWeapon != null && currentWeapon.weaponPrefab != null)
         {
-            // Instancia a arma como filha do weaponHolder (osso da mão)
-            GameObject arma = Instantiate(currentWeapon.weaponPrefab, weaponHolder);
-            
-            // Aplica a "pegada" configurada lá no ScriptableObject
-            arma.transform.localPosition = currentWeapon.handPositionOffset;
-            arma.transform.localRotation = Quaternion.Euler(currentWeapon.handRotationOffset);
+            // Descobre qual mão usar com base na configuração da arma
+            Transform targetHand = currentWeapon.equipInLeftHand ? leftHandHolder : rightHandHolder;
+
+            if (targetHand != null)
+            {
+                // Instancia na mão escolhida
+                GameObject arma = Instantiate(currentWeapon.weaponPrefab, targetHand, false);
+                
+                arma.transform.localScale = Vector3.one;
+
+                // Aplica a "pegada" com precisão
+                arma.transform.localPosition = currentWeapon.handPositionOffset;
+                arma.transform.localRotation = Quaternion.Euler(currentWeapon.handRotationOffset);
+            }
+            else
+            {
+                Debug.LogWarning("O osso da mão não foi referenciado no CombatScript!");
+            }
         }
     }
     

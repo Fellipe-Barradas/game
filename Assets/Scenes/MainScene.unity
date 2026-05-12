@@ -27315,11 +27315,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -629719859055844128, guid: 4224dfcf39b9ca848800011919f8cef9, type: 3}
---- !u!198 &1348357447 stripped
-ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 3716014902710759772, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
-  m_PrefabInstance: {fileID: 40215543}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1348599360 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1266132737864422829, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
@@ -34971,6 +34966,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1210753466}
+    - targetCorrespondingSourceObject: {fileID: -7208441673433506407, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
+      insertIndex: 1
+      addedObject: {fileID: 2119660570}
     - targetCorrespondingSourceObject: {fileID: -2349476437193732044, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2142922438}
@@ -37936,7 +37934,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   currentWeapon: {fileID: 11400000, guid: 48668a5de8653e04399582029218709b, type: 2}
-  weaponHolder: {fileID: 2142922438}
+  rightHandHolder: {fileID: 2142922438}
+  leftHandHolder: {fileID: 2119660570}
   meleeAttackPoint: {fileID: 417335328}
   enemyLayers:
     serializedVersion: 2
@@ -37947,7 +37946,7 @@ MonoBehaviour:
   lanceAttackWidth: 1
   rangedFirePoint: {fileID: 1253129368}
   projectilePrefab: {fileID: 1225370512109555040, guid: cbc3e4e7ac66ec64390c6122adb2b2d7, type: 3}
-  hitSparks: {fileID: 1348357447}
+  hitSparks: {fileID: 0}
   audioSource: {fileID: 357969521}
   blockSound: {fileID: 0}
   hurtSound: {fileID: 0}
@@ -40462,6 +40461,11 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 3562073674547505438, guid: 9a485cda8f2180046bf630ba61116527, type: 3}
+--- !u!4 &2050922942 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -7208441673433506407, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
+  m_PrefabInstance: {fileID: 1729313841}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2052745558 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7164374183065288436, guid: 7a75fdd2ce80e67429969637b32a221f, type: 3}
@@ -42388,6 +42392,37 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 3562073674547505438, guid: 9a485cda8f2180046bf630ba61116527, type: 3}
+--- !u!1 &2119660569
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2119660570}
+  m_Layer: 7
+  m_Name: ModelDisplayPointL
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2119660570
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2119660569}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5543689, y: 0.23625965, z: -0.67063195, w: 0.4325615}
+  m_LocalPosition: {x: 0.5171078, y: -0.28167754, z: -0.87876743}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2050922942}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2123101203 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5658573764341401177, guid: 7a75fdd2ce80e67429969637b32a221f, type: 3}
