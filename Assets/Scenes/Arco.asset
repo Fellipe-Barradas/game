@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Arco
   weaponPrefab: {fileID: 7279236981667502247, guid: e11ae5680dc07ca44a361f44196086a0, type: 3}
-  menuPositionOffset: {x: 0, y: 0, z: 0}
+  menuPositionOffset: {x: 4, y: 5, z: 6}
   menuRotationOffset: {x: 0, y: 0, z: 0}
-  handPositionOffset: {x: 0, y: 0, z: 0}
-  handRotationOffset: {x: 0, y: 0, z: 0}
+  equipInLeftHand: 1
+  handPositionOffset: {x: -0.905, y: -0.754, z: 0.325}
+  handRotationOffset: {x: 4.222, y: 104.6, z: 83.76}
   attackDamage: 20
   attackRate: 1.5
   attackRange: 1.5
