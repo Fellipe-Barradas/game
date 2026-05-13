@@ -138,6 +138,7 @@ public class FireKnightController : MonoBehaviour
 
         ReadMovementInput(keyboard);
         ApplyYawRotation();
+
         HandleJump(keyboard);
         HandleDash(keyboard);
         UpdateAnimations();
@@ -250,7 +251,7 @@ public class FireKnightController : MonoBehaviour
         if (rig == null) return;
 
         // Se estiver mirando ou atirando, o peso vai para 1. Senão, vai para 0.
-        float targetWeight = (isAimingState || isAttacking) ? 1f : 0f;
+        float targetWeight = ((isAimingState || isAttacking) && currentClass == PlayerClass.Arqueiro) ? 1f : 0f;
         
         rig.weight = Mathf.Lerp(rig.weight, targetWeight, Time.deltaTime * rigBlendSpeed);
     }
