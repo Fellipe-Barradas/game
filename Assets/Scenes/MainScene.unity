@@ -8733,7 +8733,7 @@ GameObject:
   - component: {fileID: 366714890}
   - component: {fileID: 366714892}
   - component: {fileID: 366714891}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: ChargeBarBackground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18881,7 +18881,7 @@ GameObject:
   - component: {fileID: 1027347018}
   - component: {fileID: 1027347017}
   - component: {fileID: 1027347016}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: ChargeBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24914,7 +24914,7 @@ GameObject:
   - component: {fileID: 1210753469}
   - component: {fileID: 1210753468}
   - component: {fileID: 1210753467}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -25268,7 +25268,7 @@ Transform:
   m_GameObject: {fileID: 1253129367}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.000019441592, y: 1.2999878, z: 1}
+  m_LocalPosition: {x: -0.005, y: 1.329, z: 1.127}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -35838,7 +35838,7 @@ GameObject:
   - component: {fileID: 1797177591}
   - component: {fileID: 1797177589}
   - component: {fileID: 1797177590}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Rig 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40583,7 +40583,7 @@ GameObject:
   - component: {fileID: 2079032217}
   - component: {fileID: 2079032216}
   - component: {fileID: 2079032219}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: Crosshair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
