@@ -13,11 +13,14 @@ MonoBehaviour:
   m_Name: EspadaLonga
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Espada Longa
-  weaponPrefab: {fileID: 298363975528676421, guid: 9d82d845404be7e4396e77f2de5fd79f, type: 3}
+  weaponPrefab: {fileID: 4188580566681762695, guid: 54687d9a4c6cf8640b065218688c4602, type: 3}
   menuPositionOffset: {x: 0, y: 0, z: 0}
   menuRotationOffset: {x: 0, y: 0, z: 0}
-  handPositionOffset: {x: 0, y: -0.039, z: 0.193}
-  handRotationOffset: {x: 100, y: 0, z: 0}
+  menuScale: {x: 1, y: 2, z: 1}
+  equipInLeftHand: 0
+  handPositionOffset: {x: -0.04339841, y: -0.003480561, z: -0.0136968065}
+  handRotationOffset: {x: 14.7669, y: 92.6639, z: 100.34531}
+  handScale: {x: 1, y: 2, z: 1}
   attackDamage: 20
   attackRate: 1.5
   attackRange: 1.5
