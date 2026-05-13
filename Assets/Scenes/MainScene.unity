@@ -17831,10 +17831,49 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.268855, y: 2.5667658, z: 2.4522338}
   m_Center: {x: 0.000003874302, y: 1.2678578, z: -1.2212336}
+--- !u!95 &860809541
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 860809535}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: b414d253c58dd4348b52f18e1fd7660e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &860809542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 860809535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b26b4a84464f17545aa5902364ae997f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DoorController
+  id: 0
+  distanceToDetect: 2
+  objTextDoor: {fileID: 0}
+  textLockedDoor: Porta fechada
+  textOpenedDoor: Porta aberta
 --- !u!1 &868706536 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3135427683715944811, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
@@ -29975,6 +30014,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1123923082199896678, guid: 9f6eb9b041cc23f4080df303337cfcba, type: 3}
       insertIndex: -1
       addedObject: {fileID: 860809539}
+    - targetCorrespondingSourceObject: {fileID: 1123923082199896678, guid: 9f6eb9b041cc23f4080df303337cfcba, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 860809542}
+    - targetCorrespondingSourceObject: {fileID: 1123923082199896678, guid: 9f6eb9b041cc23f4080df303337cfcba, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 860809541}
     - targetCorrespondingSourceObject: {fileID: 1293942151914787710, guid: 9f6eb9b041cc23f4080df303337cfcba, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1588515995}
