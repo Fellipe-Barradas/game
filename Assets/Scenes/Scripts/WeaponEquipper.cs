@@ -4,21 +4,30 @@ public class WeaponEquipper : MonoBehaviour
 {
     void Start()
     {
-        // 1. Pergunta ao State qual arma foi escolhida
         WeaponData armaParaEquipar = GameStateManager.Instance.SelectedWeapon;
 
         if (armaParaEquipar != null && armaParaEquipar.weaponPrefab != null)
         {
-            // 2. Cria a arma como filha da mão (neste objeto)
             GameObject armaInstanciada = Instantiate(armaParaEquipar.weaponPrefab, transform);
             
-            // 3. Aplica a "Pegada" de Gameplay que definimos no ScriptableObject
+            // Log para ver o que está escrito no ScriptableObject
+            Debug.Log($"[ARMA] Nome: {armaParaEquipar.weaponName} | Escala no SO: {armaParaEquipar.handScale}");
+
             armaInstanciada.transform.localPosition = armaParaEquipar.handPositionOffset;
             armaInstanciada.transform.localRotation = Quaternion.Euler(armaParaEquipar.handRotationOffset);
+            
+            // Aplicando a escala
+            armaInstanciada.transform.localScale = armaParaEquipar.handScale;
 
-            // 4. (Opcional) Passa os dados da arma para o CombatScript
+            // Log para ver se a escala realmente mudou no objeto da cena
+            Debug.Log($"[ARMA] Escala aplicada no Objeto: {armaInstanciada.transform.localScale}");
+
             CombatScript combat = GetComponentInParent<CombatScript>();
             if (combat != null) combat.currentWeapon = armaParaEquipar;
+        }
+        else
+        {
+            Debug.LogWarning("[ARMA] Nenhuma arma selecionada ou Prefab faltando!");
         }
     }
 }
