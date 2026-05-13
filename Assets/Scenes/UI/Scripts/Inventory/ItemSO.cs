@@ -4,6 +4,8 @@ using UnityEngine;
 public class ItemSO : ScriptableObject
 {
     public string itemName;
+    public int valorCura = 20;
+    public bool ehConsumivel = false;
     public Sprite icon;
     public int maxStackSize;
     public GameObject itemPrefab;

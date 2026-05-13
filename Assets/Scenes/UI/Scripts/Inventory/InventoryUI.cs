@@ -68,6 +68,16 @@ public class InventoryUI : MonoBehaviour
 
     // --- Drag ---
 
+    public void UsarItem(int slotIndex) {
+        // Procura o inventário no Player
+        Inventory inv = GameObject.FindGameObjectWithTag("Player").GetComponent<Inventory>();
+        if (inv != null) {
+            inv.UsarItem(slotIndex);
+            // Não precisas de UpdateSlots() aqui, pois o Inventory.cs 
+            // já dispara o OnInventoryChanged que a tua UI ouve.
+        }
+    }
+
     private Slot GetHoveredSlot()
     {
         foreach (var slot in slotsUI)
