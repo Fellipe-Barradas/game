@@ -16,11 +16,13 @@ MonoBehaviour:
   weaponPrefab: {fileID: 7279236981667502247, guid: e11ae5680dc07ca44a361f44196086a0, type: 3}
   menuPositionOffset: {x: 4, y: 5, z: 6}
   menuRotationOffset: {x: 0, y: 0, z: 0}
+  menuScale: {x: 1, y: 1, z: 1}
   equipInLeftHand: 1
   handPositionOffset: {x: -0.905, y: -0.754, z: 0.325}
   handRotationOffset: {x: 4.222, y: 104.6, z: 83.76}
+  handScale: {x: 1, y: 1, z: 1}
   attackDamage: 20
   attackRate: 1.5
   attackRange: 1.5
-  swingSound: {fileID: 8300000, guid: 1840fb03f458e9840b177892372282c4, type: 3}
-  hitSound: {fileID: 8300000, guid: 30aa09f4a29eb854099ff5146ed17c2b, type: 3}
+  swingSound: {fileID: 8300000, guid: 52dec5c5e9a1fc9499abc13565065c93, type: 3}
+  hitSound: {fileID: 8300000, guid: 547459f0dd9e44d4fb35cfb7ffdeb485, type: 3}
