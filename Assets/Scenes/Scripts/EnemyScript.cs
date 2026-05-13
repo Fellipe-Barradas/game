@@ -8,13 +8,13 @@ public class EnemyDummy : MonoBehaviour
     public int maxHealth = 100;
     private int currentHealth;
 
-    public enum EnemyState { Chasing, Attacking, HitStun, Dead }
+    public enum EnemyState { Idle, Chasing, Attacking, HitStun, Dead }
     public EnemyState currentState;
 
     [Header("Navegação e IA")]
     public NavMeshAgent agent;
     private Transform player;
-    public float attackRange   = 2f;
+    public float attackRange    = 2f;
     public float attackCooldown = 1.5f;
     private bool alreadyAttacked;
     public LayerMask whatIsPlayer;
@@ -28,6 +28,11 @@ public class EnemyDummy : MonoBehaviour
     private Color originalColor;
     public float flashDuration = 0.1f;
 
+    [Header("Detecção")]
+    public float detectionRange = 10f;
+    public float chaseRange     = 15f;
+    private bool isAggro        = false;
+
     // Animação
     private Animator anim;
     private static readonly int HashIsMoving   = Animator.StringToHash("isMoving");
@@ -39,7 +44,7 @@ public class EnemyDummy : MonoBehaviour
     {
         currentHealth = maxHealth;
         agent         = GetComponent<NavMeshAgent>();
-        anim          = GetComponentInChildren<Animator>(); 
+        anim          = GetComponentInChildren<Animator>();
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null) player = playerObj.transform;
@@ -53,8 +58,6 @@ public class EnemyDummy : MonoBehaviour
 
     void Update()
     {
-        // 1. Atualiza a animação de movimento baseado na velocidade REAL do agente
-        // Se a velocidade for maior que 0.1, ele está se movendo.
         if (anim != null && agent != null)
         {
             bool isActuallyMoving = agent.velocity.magnitude > 0.1f;
@@ -65,6 +68,23 @@ public class EnemyDummy : MonoBehaviour
             currentState == EnemyState.Dead    ||
             player == null) return;
 
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        // Detecta o jogador
+        if (!isAggro && distanceToPlayer <= detectionRange)
+            isAggro = true;
+
+        // Desiste se o jogador for longe demais
+        if (isAggro && distanceToPlayer > chaseRange)
+        {
+            isAggro = false;
+            ReturnToIdle();
+            return;
+        }
+
+        // Só age se estiver em aggro
+        if (!isAggro) return;
+
         bool playerInAttackRange = Physics.CheckSphere(
             transform.position, attackRange, whatIsPlayer);
 
@@ -72,21 +92,26 @@ public class EnemyDummy : MonoBehaviour
         else                      AttackPlayer();
     }
 
+    void ReturnToIdle()
+    {
+        currentState    = EnemyState.Idle;
+        agent.isStopped = true;
+        agent.SetDestination(transform.position);
+    }
+
     void ChasePlayer()
     {
-        currentState = EnemyState.Chasing;
-        agent.isStopped = false; // Garante que ele pode andar
+        currentState    = EnemyState.Chasing;
+        agent.isStopped = false;
         agent.SetDestination(player.position);
     }
 
     void AttackPlayer()
     {
-        currentState = EnemyState.Attacking;
-        
-        // Para o agente completamente para que a velocidade zere e a animação pare
+        currentState    = EnemyState.Attacking;
         agent.isStopped = true;
-        agent.SetDestination(transform.position); 
-        
+        agent.SetDestination(transform.position);
+
         transform.LookAt(new Vector3(
             player.position.x, transform.position.y, player.position.z));
 
@@ -97,7 +122,7 @@ public class EnemyDummy : MonoBehaviour
     IEnumerator AttackSequence()
     {
         alreadyAttacked = true;
-        anim.SetTrigger(HashAttack); 
+        anim.SetTrigger(HashAttack);
 
         yield return new WaitForSeconds(0.4f);
         TentarDarDano();
@@ -113,12 +138,9 @@ public class EnemyDummy : MonoBehaviour
 
         yield return new WaitForSeconds(attackCooldown);
         alreadyAttacked = false;
-        
-        // Permite que ele volte a andar caso o player saia do alcance
+
         if (currentState != EnemyState.Dead && currentState != EnemyState.HitStun)
-        {
-             agent.isStopped = false;
-        }
+            agent.isStopped = false;
     }
 
     void TentarDarDano()
@@ -126,7 +148,7 @@ public class EnemyDummy : MonoBehaviour
         CombatScript playerCombat = player.GetComponent<CombatScript>();
         if (playerCombat == null) playerCombat = player.GetComponentInParent<CombatScript>();
         if (playerCombat == null) playerCombat = player.GetComponentInChildren<CombatScript>();
-        
+
         if (playerCombat != null)
             playerCombat.TakeDamage(attackDamage);
         else
@@ -147,8 +169,8 @@ public class EnemyDummy : MonoBehaviour
     IEnumerator FlashWhite()
     {
         EnemyState previousState = currentState;
-        currentState     = EnemyState.HitStun;
-        agent.isStopped  = true; // A velocidade vai a 0, parando a animação de walk automaticamente
+        currentState    = EnemyState.HitStun;
+        agent.isStopped = true;
 
         if (enemyRenderer != null)
             enemyRenderer.material.color = Color.white;
@@ -160,8 +182,8 @@ public class EnemyDummy : MonoBehaviour
 
         if (currentState != EnemyState.Dead)
         {
-            currentState = previousState;
-            agent.isStopped = false; // Volta a se mover
+            currentState    = previousState;
+            agent.isStopped = false;
         }
     }
 
@@ -170,12 +192,18 @@ public class EnemyDummy : MonoBehaviour
         currentState    = EnemyState.Dead;
         agent.isStopped = true;
         anim.SetTrigger(HashIsDead);
-        Destroy(gameObject, 2f); 
+        Destroy(gameObject, 2f);
     }
 
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, chaseRange);
     }
 }
