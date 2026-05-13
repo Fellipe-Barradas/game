@@ -47,11 +47,13 @@ public class CombatScript : MonoBehaviour
 
     private float nextAttackTime;
     private bool isChargingShot = false;
+    private Animator anim;
     private FireKnightController controller;
 
     private void Start()
     {
         controller = GetComponent<FireKnightController>();
+        anim = GetComponent<Animator>();
 
         // 1. Esconde a UI da mira por padrão
         if (crosshairUI != null) crosshairUI.SetActive(false);
@@ -304,8 +306,12 @@ public class CombatScript : MonoBehaviour
 
         if (audioSource != null && hurtSound != null)
             audioSource.PlayOneShot(hurtSound);
+        
+        if (anim != null)
+        {
+            anim.SetTrigger("TakeDamage");
+        }
 
-        // AQUI ESTÁ A LIGAÇÃO: Avisa o script de saúde que o dano passou pelo escudo
         PlayerHealth scriptDeVida = GetComponent<PlayerHealth>();
         if (scriptDeVida != null)
         {
