@@ -218,23 +218,23 @@ public class CombatScript : MonoBehaviour
         if (controller.currentClass == PlayerClass.Arqueiro){
             ShootProjectile();
         }
-        else
+        else{
             PerformMeleeAttack();
+        }
     }
 
     private void PerformMeleeAttack()
     {
-       
         if (meleeAttackPoint == null) return;
-
         Vector3 hitboxSize = controller.currentClass == PlayerClass.Espadachim
             ? new Vector3(swordAttackWidth, 2f, swordAttackRange)
             : new Vector3(lanceAttackWidth, 2f, lanceAttackRange);
-
+        Debug.Log($"{hitboxSize} criada");
         Vector3 boxCenter = meleeAttackPoint.position + meleeAttackPoint.forward * (hitboxSize.z / 2f);
-
+        Debug.Log($"{boxCenter} criada");
+        Debug.Log($"{Physics.OverlapBox(boxCenter, hitboxSize / 2f, meleeAttackPoint.rotation, enemyLayers)} criada");
         Collider[] hits = Physics.OverlapBox(boxCenter, hitboxSize / 2f, meleeAttackPoint.rotation, enemyLayers);
-        
+
         Debug.Log($"[MELEE ATTACK] Acertou {hits.Length} inimigo(s)!");
 
         int damage = currentWeapon != null ? currentWeapon.attackDamage : 10;
