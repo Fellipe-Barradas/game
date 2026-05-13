@@ -22,6 +22,13 @@ public class PlayerHealth : MonoBehaviour
         Invoke(nameof(SincronizarUI), 0.1f);
     }
 
+    public void Curar(int quantidade) {
+        currentHealth += quantidade;
+        if (currentHealth > maxHealth) currentHealth = maxHealth;
+        GameOverManager.Instance?.AtualizarVidaUI(currentHealth, maxHealth);
+        Debug.Log("Vida atualizada: " + currentHealth);
+    }
+
     void SincronizarUI()
     {
         GameOverManager.Instance?.AtualizarVidaUI(currentHealth, maxHealth);

@@ -38,6 +38,7 @@ public class MusicManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         CreateAudioSources();
+        ApplySavedVolumes();
     }
 
     private void OnEnable()  => SceneManager.sceneLoaded += OnSceneLoaded;
@@ -220,6 +221,19 @@ public class MusicManager : MonoBehaviour
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+    private void ApplySavedVolumes()
+    {
+        float master = PlayerPrefs.GetFloat("MasterVolume", 0.75f);
+        float music  = PlayerPrefs.GetFloat("MusicVolume",  0.75f);
+        float player = PlayerPrefs.GetFloat("PlayerVolume", 0.75f);
+        audioMixer.SetFloat("MasterVolume", NormalizedToDB(master));
+        audioMixer.SetFloat("MusicVolume",  NormalizedToDB(music));
+        audioMixer.SetFloat("PlayerVolume", NormalizedToDB(player));
+    }
+
+    private float NormalizedToDB(float value)
+        => value > 0.0001f ? Mathf.Log10(value) * 20f : -80f;
+
     private void StopFade()
     {
         if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
