@@ -1,9 +1,12 @@
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
 public class CombatScript : MonoBehaviour
 {
+    [Header("Status de Upgrade")]
+    public int bonusDanoUpgrade = 0;
     [Header("Arma Equipada")]
     public WeaponData currentWeapon;
     
@@ -30,6 +33,7 @@ public class CombatScript : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip blockSound;
     public AudioClip hurtSound;
+    [SerializeField] private AudioMixerGroup playerAudioGroup;
 
     [Header("Mira e Câmera (Arqueiro)")]
     public GameObject crosshairUI; // Arraste a UI da mira aqui
@@ -54,6 +58,9 @@ public class CombatScript : MonoBehaviour
     {
         controller = GetComponent<FireKnightController>();
         anim = GetComponent<Animator>();
+
+        if (audioSource != null && playerAudioGroup != null)
+            audioSource.outputAudioMixerGroup = playerAudioGroup;
 
         // 1. Esconde a UI da mira por padrão
         if (crosshairUI != null) crosshairUI.SetActive(false);
@@ -239,7 +246,7 @@ public class CombatScript : MonoBehaviour
 
         Debug.Log($"[MELEE ATTACK] Acertou {hits.Length} inimigo(s)!");
 
-        int damage = currentWeapon != null ? currentWeapon.attackDamage : 10;
+        int damage = (currentWeapon != null ? currentWeapon.attackDamage : 10) + bonusDanoUpgrade;
 
         foreach (Collider enemy in hits)
         {
@@ -284,12 +291,13 @@ public class CombatScript : MonoBehaviour
 
         // 5. Instancia a flecha olhando para o alvo
         GameObject projectile = Instantiate(projectilePrefab, rangedFirePoint.position, Quaternion.LookRotation(directionToTarget));
-        
-        // Passa o dano para a flecha
+
+        // Passa o dano para a flecha (AQUI É A MUDANÇA)
         ProjectileScript projScript = projectile.GetComponent<ProjectileScript>();
         if (projScript != null)
         {
-            projScript.damage = currentWeapon != null ? currentWeapon.attackDamage : 10;
+            // Somamos o dano da arma ao bônus acumulado pelos upgrades
+            projScript.damage = (currentWeapon != null ? currentWeapon.attackDamage : 10) + bonusDanoUpgrade;
         }
     }
     public void TakeDamage(int damage)
