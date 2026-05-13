@@ -24,5 +24,5 @@ MonoBehaviour:
   attackDamage: 20
   attackRate: 1.5
   attackRange: 1.5
-  swingSound: {fileID: 8300000, guid: 1840fb03f458e9840b177892372282c4, type: 3}
-  hitSound: {fileID: 8300000, guid: 30aa09f4a29eb854099ff5146ed17c2b, type: 3}
+  swingSound: {fileID: 8300000, guid: a82233f4e2e8e824192efca76552b9ab, type: 3}
+  hitSound: {fileID: 8300000, guid: c2fceec19a2ff084e95a6a5402935618, type: 3}

@@ -8934,6 +8934,11 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!4 &361973828 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3647618709450538133, guid: 7a75fdd2ce80e67429969637b32a221f, type: 3}
+  m_PrefabInstance: {fileID: 1708006508}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &369172398 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2835125086147019619, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
@@ -17215,7 +17220,6 @@ Transform:
   - {fileID: 204573611}
   - {fileID: 168293051}
   - {fileID: 1132157396}
-  - {fileID: 1341160427}
   - {fileID: 1127215218}
   - {fileID: 196895007}
   - {fileID: 1421031060}
@@ -17231,6 +17235,7 @@ Transform:
   - {fileID: 1122914459}
   - {fileID: 1873169383}
   - {fileID: 964936951}
+  - {fileID: 1422431699}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &711138365 stripped
@@ -18098,7 +18103,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b26b4a84464f17545aa5902364ae997f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorController
-  id: 0
   distanceToDetect: 2
   objTextDoor: {fileID: 0}
   textLockedDoor: Porta fechada
@@ -18843,6 +18847,11 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 3562073674547505438, guid: 9a485cda8f2180046bf630ba61116527, type: 3}
+--- !u!4 &951343268 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400062, guid: a59b9202cdb93394781b8e79c967d8a3, type: 3}
+  m_PrefabInstance: {fileID: 899143139}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &951876390 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2835125086147019619, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
@@ -28062,11 +28071,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -629719859055844128, guid: 4224dfcf39b9ca848800011919f8cef9, type: 3}
---- !u!198 &1348357447 stripped
-ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 3716014902710759772, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
-  m_PrefabInstance: {fileID: 40215543}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1348599360 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1266132737864422829, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
@@ -28125,7 +28129,6 @@ Transform:
   m_Children:
   - {fileID: 1299249537}
   - {fileID: 193767386}
-  - {fileID: 361973828}
   - {fileID: 1091463510}
   - {fileID: 2111683736}
   - {fileID: 17254838}
@@ -28133,7 +28136,6 @@ Transform:
   - {fileID: 1625221032}
   - {fileID: 954863591}
   - {fileID: 1814797798}
-  - {fileID: 1374289867}
   - {fileID: 283405691}
   - {fileID: 1093941689}
   - {fileID: 1917841291}
@@ -28141,6 +28143,8 @@ Transform:
   - {fileID: 509593047}
   - {fileID: 2100852308}
   - {fileID: 107213335}
+  - {fileID: 1374289865}
+  - {fileID: 361973828}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!64 &1355164638
@@ -28422,6 +28426,11 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!4 &1374289865 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1927931088217334632, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
+  m_PrefabInstance: {fileID: 40215543}
+  m_PrefabAsset: {fileID: 0}
 --- !u!65 &1392108414
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -30886,6 +30895,11 @@ BoxCollider:
 Transform:
   m_CorrespondingSourceObject: {fileID: 4011077083501845521, guid: 5fe6194b562581343b266bb252a5bf9a, type: 3}
   m_PrefabInstance: {fileID: 1421031054}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1422431699 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4011077083501845521, guid: 5fe6194b562581343b266bb252a5bf9a, type: 3}
+  m_PrefabInstance: {fileID: 593697378}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1424629575 stripped
 GameObject:
@@ -35975,7 +35989,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1730095061
 Transform:
   m_ObjectHideFlags: 0
@@ -35989,7 +36003,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1388794156}
+  - {fileID: 951343268}
   m_Father: {fileID: 74201077}
   m_LocalEulerAnglesHint: {x: 0, y: -90.158, z: 0}
 --- !u!114 &1730095062
@@ -38982,7 +38996,7 @@ MonoBehaviour:
   hurtSound: {fileID: 0}
   crosshairUI: {fileID: 2079032215}
   camScript: {fileID: 381766069}
-  chargeBarFill: {fileID: 1027347016}
+  chargeBarFill: {fileID: 0}
   crosshairCanvasGroup: {fileID: 2079032219}
   bowChargeDuration: 1.2
   fadeSpeed: 5
@@ -41773,9 +41787,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 366714890}
-  - {fileID: 1027347018}
+  m_Children: []
   m_Father: {fileID: 1210753466}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -43300,12 +43312,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6243838798648000727, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
       insertIndex: -1
       addedObject: {fileID: 95960631}
-    - targetCorrespondingSourceObject: {fileID: 1335102345517047668, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1026871805}
-    - targetCorrespondingSourceObject: {fileID: 1335102345517047668, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1026871804}
     - targetCorrespondingSourceObject: {fileID: 5964384063422540992, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1446550425}
