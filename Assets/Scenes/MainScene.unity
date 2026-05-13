@@ -39336,6 +39336,7 @@ MonoBehaviour:
   audioSource: {fileID: 357969521}
   blockSound: {fileID: 0}
   hurtSound: {fileID: 8300000, guid: d56dca3212e44d049bb9b114a480da15, type: 3}
+  playerAudioGroup: {fileID: -8396196577121869744, guid: b8105f9e2fac88b4fadb092d03215f93, type: 2}
   crosshairUI: {fileID: 2079032215}
   camScript: {fileID: 381766069}
   chargeBarFill: {fileID: 0}

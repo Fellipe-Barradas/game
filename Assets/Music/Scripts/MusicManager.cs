@@ -225,8 +225,10 @@ public class MusicManager : MonoBehaviour
     {
         float master = PlayerPrefs.GetFloat("MasterVolume", 0.75f);
         float music  = PlayerPrefs.GetFloat("MusicVolume",  0.75f);
+        float player = PlayerPrefs.GetFloat("PlayerVolume", 0.75f);
         audioMixer.SetFloat("MasterVolume", NormalizedToDB(master));
         audioMixer.SetFloat("MusicVolume",  NormalizedToDB(music));
+        audioMixer.SetFloat("PlayerVolume", NormalizedToDB(player));
     }
 
     private float NormalizedToDB(float value)

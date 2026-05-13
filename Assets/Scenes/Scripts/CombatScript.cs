@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
@@ -30,6 +31,7 @@ public class CombatScript : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip blockSound;
     public AudioClip hurtSound;
+    [SerializeField] private AudioMixerGroup playerAudioGroup;
 
     [Header("Mira e Câmera (Arqueiro)")]
     public GameObject crosshairUI; // Arraste a UI da mira aqui
@@ -54,6 +56,9 @@ public class CombatScript : MonoBehaviour
     {
         controller = GetComponent<FireKnightController>();
         anim = GetComponent<Animator>();
+
+        if (audioSource != null && playerAudioGroup != null)
+            audioSource.outputAudioMixerGroup = playerAudioGroup;
 
         // 1. Esconde a UI da mira por padrão
         if (crosshairUI != null) crosshairUI.SetActive(false);
