@@ -260,6 +260,8 @@ public class CombatScript : MonoBehaviour
 
             if (enemy.TryGetComponent<EnemyDummy>(out EnemyDummy e))
                 e.TakeDamage(damage);
+            if (enemy.TryGetComponent<BossEnemy>(out BossEnemy boss))
+                boss.TakeDamage(damage);    
         }
     }
 
