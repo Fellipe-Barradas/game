@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 
 public class CombatScript : MonoBehaviour
 {
+    [Header("Status de Upgrade")]
+    public int bonusDanoUpgrade = 0;
     [Header("Arma Equipada")]
     public WeaponData currentWeapon;
     
@@ -239,7 +241,7 @@ public class CombatScript : MonoBehaviour
 
         Debug.Log($"[MELEE ATTACK] Acertou {hits.Length} inimigo(s)!");
 
-        int damage = currentWeapon != null ? currentWeapon.attackDamage : 10;
+        int damage = (currentWeapon != null ? currentWeapon.attackDamage : 10) + bonusDanoUpgrade;
 
         foreach (Collider enemy in hits)
         {
@@ -284,12 +286,13 @@ public class CombatScript : MonoBehaviour
 
         // 5. Instancia a flecha olhando para o alvo
         GameObject projectile = Instantiate(projectilePrefab, rangedFirePoint.position, Quaternion.LookRotation(directionToTarget));
-        
-        // Passa o dano para a flecha
+
+        // Passa o dano para a flecha (AQUI É A MUDANÇA)
         ProjectileScript projScript = projectile.GetComponent<ProjectileScript>();
         if (projScript != null)
         {
-            projScript.damage = currentWeapon != null ? currentWeapon.attackDamage : 10;
+            // Somamos o dano da arma ao bônus acumulado pelos upgrades
+            projScript.damage = (currentWeapon != null ? currentWeapon.attackDamage : 10) + bonusDanoUpgrade;
         }
     }
     public void TakeDamage(int damage)
