@@ -35858,7 +35858,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
       propertyPath: m_WarningMessage
-      value: 
+      value: "\nBinding warning: Some generic clip(s) animate transforms that are
+        already bound by a Humanoid avatar. These transforms can only be changed
+        by Humanoid clips.\n\tTransform 'spine_02'\n\tTransform 'spine_01'\n\tTransform
+        'spine_02'\n\tTransform 'spine_01'\n\tTransform 'spine_02'\n\tTransform 'spine_01'"
       objectReference: {fileID: 0}
     - target: {fileID: 5949200829620077376, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
       propertyPath: m_Layer
@@ -35984,7 +35987,7 @@ GameObject:
   - component: {fileID: 1730095063}
   - component: {fileID: 1730095062}
   m_Layer: 6
-  m_Name: Capsule
+  m_Name: Inimigo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -38993,7 +38996,7 @@ MonoBehaviour:
   hitSparks: {fileID: 0}
   audioSource: {fileID: 357969521}
   blockSound: {fileID: 0}
-  hurtSound: {fileID: 0}
+  hurtSound: {fileID: 8300000, guid: d56dca3212e44d049bb9b114a480da15, type: 3}
   crosshairUI: {fileID: 2079032215}
   camScript: {fileID: 381766069}
   chargeBarFill: {fileID: 0}
