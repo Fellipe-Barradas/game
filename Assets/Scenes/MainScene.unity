@@ -22612,7 +22612,7 @@ Transform:
   m_GameObject: {fileID: 1080255154}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -13, y: 1.29, z: -7.303}
+  m_LocalPosition: {x: -75.24, y: 5.32, z: -3.303}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -39713,6 +39713,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22b3527d55edfc44b80be0825f98ee48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  bonusDanoUpgrade: 0
   currentWeapon: {fileID: 11400000, guid: 48668a5de8653e04399582029218709b, type: 2}
   rightHandHolder: {fileID: 2142922438}
   leftHandHolder: {fileID: 2119660570}
