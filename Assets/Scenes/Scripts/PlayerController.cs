@@ -29,8 +29,8 @@ public class FireKnightController : MonoBehaviour
 
     [Header("Esquiva")]
     public float dashForce    = 15f;
-    public float dashDuration = 0.25f;
-    public float dashCooldown = 1f;
+    public float dashDuration = 1f;
+    public float dashCooldown = 0.5f;
     public bool isInvincible { get; private set; }
 
     [Header("Mira com Rigging")]
@@ -44,8 +44,9 @@ public class FireKnightController : MonoBehaviour
     private bool isGrounded, isJumping, isDashing, isSprinting;
     private float dashTimeCounter;
     private float lastDashTime      = -10f;
-    private bool  pendingJump, pendingDash;
+    private bool  pendingJump;
     private float pendingDashForce;
+    private Vector3 dashDirection;
     private float jumpGraceTimer    = 0f;
     private float jumpGraceDuration = 0.15f;
     private float rawMoveX, rawMoveZ;
@@ -261,7 +262,7 @@ public class FireKnightController : MonoBehaviour
         GameStateManager stateManager = GameStateManager.Instance;
         if (stateManager != null && !stateManager.CanPlayerMove)
         {
-            pendingJump = pendingDash = false;
+            pendingJump = false;
             rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             return;
         }
@@ -272,14 +273,6 @@ public class FireKnightController : MonoBehaviour
             isJumping   = true;
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        }
-
-        if (pendingDash)
-        {
-            pendingDash       = false;
-            rb.linearVelocity = Vector3.zero;
-            Vector3 dir = moveDirection.sqrMagnitude > 0.01f ? moveDirection : transform.forward;
-            rb.AddForce(dir * pendingDashForce, ForceMode.VelocityChange);
         }
 
         if (isDashing) HandleEvasion();
@@ -303,20 +296,37 @@ public class FireKnightController : MonoBehaviour
         isInvincible     = true;
         dashTimeCounter  = dashDuration;
         lastDashTime     = Time.time;
-        pendingDash      = true;
+        dashDirection    = moveDirection.sqrMagnitude > 0.01f ? moveDirection : transform.forward;
         pendingDashForce = force;
         anim.SetBool(HashIsDashing, true);
     }
 
     private void HandleEvasion()
     {
+        // Para o dash se houver parede à frente (layer ground)
+        Vector3 castOrigin = transform.position + Vector3.up * 0.5f;
+        if (Physics.SphereCast(castOrigin, 0.3f, dashDirection, out _, 0.5f, groundMask))
+        {
+            StopEvasion();
+            return;
+        }
+
+        rb.linearVelocity = new Vector3(
+            dashDirection.x * pendingDashForce,
+            rb.linearVelocity.y,
+            dashDirection.z * pendingDashForce
+        );
+
         dashTimeCounter -= Time.fixedDeltaTime;
         if (dashTimeCounter <= 0f)
-        {
-            isDashing    = false;
-            isInvincible = false;
-            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
-            anim.SetBool(HashIsDashing, false);
-        }
+            StopEvasion();
+    }
+
+    private void StopEvasion()
+    {
+        isDashing    = false;
+        isInvincible = false;
+        rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+        anim.SetBool(HashIsDashing, false);
     }
 }

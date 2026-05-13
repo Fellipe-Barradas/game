@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bf9a17700873f74baace782b7482ef0, type: 3}
+  m_Name: WeaponTierConfig
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponTierConfig
+  tiers:
+  - tier: 1
+    damageMultiplier: 1
+    shardCost: 0
+  - tier: 2
+    damageMultiplier: 1.5
+    shardCost: 1
+  - tier: 3
+    damageMultiplier: 2
+    shardCost: 2
+  - tier: 4
+    damageMultiplier: 3
+    shardCost: 4
+  - tier: 5
+    damageMultiplier: 5
+    shardCost: 8

@@ -10,10 +10,12 @@ public class PlayerHealth : MonoBehaviour
 
     private Renderer[] allRenderers;
     private List<Color> originalColors = new List<Color>();
+    private FireKnightController playerController;
 
     void Start()
     {
         currentHealth = maxHealth;
+        playerController = GetComponent<FireKnightController>();
 
         allRenderers = GetComponentsInChildren<Renderer>();
         foreach (Renderer r in allRenderers)
@@ -37,6 +39,7 @@ public class PlayerHealth : MonoBehaviour
     public void ReceberDano(int damage)
     {
         if (currentHealth <= 0) return;
+        if (playerController != null && playerController.isInvincible) return;
 
         currentHealth -= damage;
         GameOverManager.Instance?.AtualizarVidaUI(currentHealth, maxHealth);

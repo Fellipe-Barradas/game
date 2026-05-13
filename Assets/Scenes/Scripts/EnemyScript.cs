@@ -8,6 +8,11 @@ public class EnemyDummy : MonoBehaviour
     public int maxHealth = 100;
     private int currentHealth;
 
+    [Header("Drop de Moedas")]
+    public int dropPrata      = 0;
+    public int dropOuro       = 0;
+    public int dropFragmentos = 0;
+
     public enum EnemyState { Idle, Chasing, Attacking, HitStun, Dead }
     public EnemyState currentState;
 
@@ -124,7 +129,7 @@ public class EnemyDummy : MonoBehaviour
         alreadyAttacked = true;
         anim.SetTrigger(HashAttack);
 
-        yield return new WaitForSeconds(0.4f);
+        yield return new WaitForSeconds(0.75f);
         TentarDarDano();
 
         Vector3 attackDir = (player.position - transform.position).normalized;
@@ -192,6 +197,9 @@ public class EnemyDummy : MonoBehaviour
         currentState    = EnemyState.Dead;
         agent.isStopped = true;
         anim.SetTrigger(HashIsDead);
+
+        GerenciadorMoedas.Instancia?.AdicionarDrops(dropPrata, dropOuro, dropFragmentos);
+
         Destroy(gameObject, 2f);
     }
 

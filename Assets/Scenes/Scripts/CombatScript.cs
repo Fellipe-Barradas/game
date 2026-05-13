@@ -7,6 +7,7 @@ public class CombatScript : MonoBehaviour
 {
     [Header("Status de Upgrade")]
     public int bonusDanoUpgrade = 0;
+    [HideInInspector] public float tierDamageMultiplier = 1f;
     [Header("Arma Equipada")]
     public WeaponData currentWeapon;
     
@@ -246,7 +247,7 @@ public class CombatScript : MonoBehaviour
 
         Debug.Log($"[MELEE ATTACK] Acertou {hits.Length} inimigo(s)!");
 
-        int damage = (currentWeapon != null ? currentWeapon.attackDamage : 10) + bonusDanoUpgrade;
+        int damage = (int)((currentWeapon != null ? currentWeapon.attackDamage : 10) * tierDamageMultiplier) + bonusDanoUpgrade;
 
         foreach (Collider enemy in hits)
         {
@@ -299,7 +300,7 @@ public class CombatScript : MonoBehaviour
         if (projScript != null)
         {
             // Somamos o dano da arma ao bônus acumulado pelos upgrades
-            projScript.damage = (currentWeapon != null ? currentWeapon.attackDamage : 10) + bonusDanoUpgrade;
+            projScript.damage = (int)((currentWeapon != null ? currentWeapon.attackDamage : 10) * tierDamageMultiplier) + bonusDanoUpgrade;
         }
     }
     public void TakeDamage(int damage)

@@ -75,6 +75,7 @@ public class LojaPocoes : MonoBehaviour
         if (item == null) return;
         
         // Usa o seu sistema de moedas existente
+        if (GerenciadorMoedas.Instancia == null) return;
         if (GerenciadorMoedas.Instancia.GastarPrata(custo))
         {
             inventarioPlayer.AddItem(item, 1);

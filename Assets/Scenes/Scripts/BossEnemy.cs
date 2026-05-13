@@ -179,7 +179,8 @@ public class BossEnemy : MonoBehaviour
         currentState    = BossState.Dead;
         agent.isStopped = true;
         anim.SetTrigger(HashIsDead);
-        Destroy(gameObject, 2.5f);
+        Destroy(gameObject, 3f);
+        GameStateManager.Instance?.TriggerVictory();
     }
 
     void OnDrawGizmosSelected()
