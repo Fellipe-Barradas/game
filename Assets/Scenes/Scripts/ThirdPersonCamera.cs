@@ -1,6 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+// Execution order alto garante que o LateUpdate da câmera rode DEPOIS do LateUpdate do
+// FireKnightController, evitando que a rotação do player (parent do cameraPivot) faça a
+// world rotation do pivot derivar entre frames.
+[DefaultExecutionOrder(200)]
 public class ThirdPersonCamera : MonoBehaviour
 {
     [Header("Referências")]
@@ -59,13 +63,25 @@ private bool isAimingCam = false; // Controla o estado de zoom
 
     private void Update()
     {
-        if (cameraPivot == null) return;
-
         GameStateManager stateManager = GameStateManager.Instance;
         if (stateManager == null || stateManager.CanCameraLook)
             ReadMouseInput();
 
-        cameraPivot.localRotation = Quaternion.Euler(currentPitch, 0f, 0f);
+        // Aplica a rotação no Update também para o ReadMovementInput do player (LateUpdate
+        // ordem 0) já enxergar a direção atual da câmera neste frame — sem isso, o moveDirection
+        // ficaria com 1 frame de lag em relação ao mouse.
+        if (cameraPivot != null)
+            cameraPivot.rotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
+    }
+
+    private void LateUpdate()
+    {
+        if (cameraPivot == null) return;
+
+        // Reaplica em LateUpdate (ordem 200, após o player rotacionar em LateUpdate ordem 0)
+        // para corrigir a deriva causada pelo parent ter rodado, garantindo que no momento
+        // do render o cameraPivot esteja exatamente na rotação alvo.
+        cameraPivot.rotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
         HandleCameraCollision();
     }
 
