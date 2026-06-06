@@ -8,7 +8,8 @@ public enum GameState
     Playing,
     Pause,
     GameOver,
-    InventoryCrafting
+    InventoryCrafting,
+    Victory
 }
 
 public class GameStateManager : MonoBehaviour
@@ -33,8 +34,9 @@ public class GameStateManager : MonoBehaviour
     public PlayerClass SelectedClass { get; set; } = PlayerClass.Arqueiro;
     public WeaponData SelectedWeapon;
     public bool IsWorldPaused =>
-        CurrentState == GameState.Pause ||
-        CurrentState == GameState.GameOver;
+        CurrentState == GameState.Pause     ||
+        CurrentState == GameState.GameOver  ||
+        CurrentState == GameState.Victory;
 
     public bool CanPlayerMove => CurrentState == GameState.Playing;
     public bool CanPlayerAct => CurrentState == GameState.Playing;
@@ -134,6 +136,11 @@ public class GameStateManager : MonoBehaviour
         CurrentState = GameState.Playing;
         SceneManager.LoadScene(gameplaySceneName);
         ApplyState(CurrentState);
+    }
+
+    public void TriggerVictory()
+    {
+        SetState(GameState.Victory);
     }
 
     public void ReturnToMainMenu()

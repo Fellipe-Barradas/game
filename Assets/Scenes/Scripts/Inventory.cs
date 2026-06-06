@@ -34,6 +34,7 @@ public class Inventory : MonoBehaviour
     public event Action OnInventoryChanged;
     public event Action OnEquippedChanged;
 
+
     public int EquippedHotbarIndex => equippedHotbarIndex;
     public int HotbarStartIndex => hotbarStartIndex;
     public float EquipedOpacity => equipedOpacity;
@@ -60,12 +61,57 @@ public class Inventory : MonoBehaviour
     private void Update()
     {
         if (GameStateManager.Instance != null && !GameStateManager.Instance.CanPlayerAct) return;
+        
         DetectLookedAtItem();
-        Pickup();
-        HandleHotbarSelection();
-        HandleDropEquippedItem();
+        HandleHotbarSelection(); //
+        HandleDropEquippedItem(); //
+
+        // Lógica centralizada da Tecla "E"
+        if (Keyboard.current.eKey.wasPressedThisFrame)
+        {
+            if (lookedAtItem != null)
+            {
+                // Prioridade 1: Pegar item do chão se estiver olhando para um
+                ExecutarPickup(); 
+            }
+            else
+            {
+                // Prioridade 2: Usar o item que está na mão (Hotbar)
+                int slotIndex = hotbarStartIndex + equippedHotbarIndex;
+                UsarItem(slotIndex);
+            }
+        }
+    }
+
+    private void ExecutarPickup()
+    {
+        // Sua lógica original de coleta
+        AddItem(lookedAtItem.item, lookedAtItem.amount);
+        Destroy(lookedAtItem.gameObject);
+        lookedAtItem = null;
+        lookedAtRenderer = null;
+        originalMaterial = null;
     }
     
+
+    public void UsarItem(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= entries.Count) return;
+        var entry = entries[slotIndex];
+
+        if (entry.item == null || !entry.item.ehConsumivel) return;
+
+        if (entry.item.itemName == "Poção de Cura")
+        {
+            PlayerHealth health = GetComponent<PlayerHealth>();
+            if (health != null) 
+            {
+                health.Curar(entry.item.valorCura);
+                RemoveItem(slotIndex, 1); //
+                Debug.Log("Vida recuperada via tecla E!");
+            }
+        }
+    }
     public void AddItem(ItemSO itemToAdd, int amount)
     {
         int remaining = amount;

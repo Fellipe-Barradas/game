@@ -10,16 +10,25 @@ public class PlayerHealth : MonoBehaviour
 
     private Renderer[] allRenderers;
     private List<Color> originalColors = new List<Color>();
+    private FireKnightController playerController;
 
     void Start()
     {
         currentHealth = maxHealth;
+        playerController = GetComponent<FireKnightController>();
 
         allRenderers = GetComponentsInChildren<Renderer>();
         foreach (Renderer r in allRenderers)
             originalColors.Add(r.material.HasProperty("_Color") ? r.material.color : Color.white);
 
         Invoke(nameof(SincronizarUI), 0.1f);
+    }
+
+    public void Curar(int quantidade) {
+        currentHealth += quantidade;
+        if (currentHealth > maxHealth) currentHealth = maxHealth;
+        GameOverManager.Instance?.AtualizarVidaUI(currentHealth, maxHealth);
+        Debug.Log("Vida atualizada: " + currentHealth);
     }
 
     void SincronizarUI()
@@ -30,6 +39,7 @@ public class PlayerHealth : MonoBehaviour
     public void ReceberDano(int damage)
     {
         if (currentHealth <= 0) return;
+        if (playerController != null && playerController.isInvincible) return;
 
         currentHealth -= damage;
         GameOverManager.Instance?.AtualizarVidaUI(currentHealth, maxHealth);

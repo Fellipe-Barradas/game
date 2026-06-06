@@ -6,7 +6,8 @@ using UnityEngine.UI;
 [DefaultExecutionOrder(-200)]
 public class Slot : MonoBehaviour,
     IPointerEnterHandler, IPointerExitHandler,
-    IBeginDragHandler, IDragHandler, IEndDragHandler
+    IBeginDragHandler, IDragHandler, IEndDragHandler,
+    IPointerClickHandler // <- 1. ADICIONADO AQUI PARA DETECTAR CLIQUES
 {
     public bool hovering;
     public int SlotIndex { get; set; }
@@ -40,6 +41,20 @@ public class Slot : MonoBehaviour,
         UpdateSlot();
     }
 
+    // 2. SUBSTITUÍDO: Lógica nativa da Unity para cliques na interface
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        // Verifica se clicou com o botão esquerdo e se o slot não está vazio
+        if (eventData.button == PointerEventData.InputButton.Left && HasItem())
+        {
+            // Busca o Inventário no Player e manda usar o item deste slot específico
+            Inventory inv = GameObject.FindGameObjectWithTag("Player").GetComponent<Inventory>();
+            if (inv != null)
+            {
+                inv.UsarItem(SlotIndex);
+            }
+        }
+    }
     public void UpdateSlot()
     {
         if (heltItem != null)
