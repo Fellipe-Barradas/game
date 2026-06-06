@@ -44,14 +44,14 @@ public class CombatScript : MonoBehaviour
     public CanvasGroup crosshairCanvasGroup; // NOVO: Para fazer a mira aparecer suavemente
 
     [Header("Configuração de Carga do Arco")]
-    public float bowChargeDuration = 1.2f; // Tempo em segundos para a barra encher 100%
-    public float fadeSpeed = 5f; // Velocidade em que a mira surge na tela
+    public float bowChargeDuration = 1.2f;
     private float currentChargeTime = 0f;
 
     public bool isBlocking { get; private set; }
 
     private float nextAttackTime;
     private bool isChargingShot = false;
+    private Vector3 storedShotDirection;
     private Animator anim;
     private FireKnightController controller;
 
@@ -66,6 +66,8 @@ public class CombatScript : MonoBehaviour
         // 1. Esconde a UI da mira por padrão
         if (crosshairUI != null) crosshairUI.SetActive(false);
         if (crosshairCanvasGroup != null) crosshairCanvasGroup.alpha = 0f;
+
+        CriarChargeBarSeNecessario();
 
         // 2. PEGA A ARMA DO MENU
         if (GameStateManager.Instance != null && GameStateManager.Instance.SelectedWeapon != null)
@@ -97,6 +99,33 @@ public class CombatScript : MonoBehaviour
         }
     }
     
+    private void CriarChargeBarSeNecessario()
+    {
+        if (chargeBarFill != null || crosshairUI == null) return;
+
+        // Fundo escuro — filho do crosshairUI para sumir/aparecer junto
+        GameObject fundo = new GameObject("ChargeBar_BG");
+        fundo.transform.SetParent(crosshairUI.transform, false);
+        RectTransform fundoRect = fundo.AddComponent<RectTransform>();
+        fundoRect.anchorMin = new Vector2(0.5f, 0.5f);
+        fundoRect.anchorMax = new Vector2(0.5f, 0.5f);
+        fundoRect.sizeDelta = new Vector2(120f, 12f);
+        fundoRect.anchoredPosition = new Vector2(0f, -50f);
+        Image fundoImg = fundo.AddComponent<Image>();
+        fundoImg.color = new Color(0f, 0f, 0f, 0.6f);
+
+        // Preenchimento amarelo — largura controlada por anchorMax.x (0 = vazio, 1 = cheio)
+        GameObject fill = new GameObject("ChargeBar_Fill");
+        fill.transform.SetParent(fundo.transform, false);
+        RectTransform fillRect = fill.AddComponent<RectTransform>();
+        fillRect.anchorMin = new Vector2(0f, 0f);
+        fillRect.anchorMax = new Vector2(0f, 1f); // começa com largura 0
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
+        chargeBarFill = fill.AddComponent<Image>();
+        chargeBarFill.color = new Color(1f, 0.85f, 0f);
+    }
+
     private void Update()
     {
         GameStateManager stateManager = GameStateManager.Instance;
@@ -138,10 +167,9 @@ public class CombatScript : MonoBehaviour
             currentChargeTime = 0f; // Começa a carga do zero
             controller.SetAiming(true);
 
-            // Liga a UI, mas deixa invisível para o Fade fazer o trabalho
             if (crosshairUI != null) crosshairUI.SetActive(true);
-            if (crosshairCanvasGroup != null) crosshairCanvasGroup.alpha = 0f; 
-            if (chargeBarFill != null) chargeBarFill.fillAmount = 0f;
+            if (crosshairCanvasGroup != null) crosshairCanvasGroup.alpha = 1f;
+            if (chargeBarFill != null) chargeBarFill.rectTransform.anchorMax = new Vector2(0f, 1f);
             
             if (camScript != null) camScript.SetAimingCamera(true);
 
@@ -152,16 +180,13 @@ public class CombatScript : MonoBehaviour
         // 2. SEGURANDO O BOTÃO (Carregando)
         if (isChargingShot)
         {
-            // Aumenta o tempo de carga
             currentChargeTime += Time.deltaTime;
-            
-            // Preenche a barra de progresso (de 0 a 1)
-            if (chargeBarFill != null)
-                chargeBarFill.fillAmount = Mathf.Clamp01(currentChargeTime / bowChargeDuration);
 
-            // Faz a mira aparecer lentamente (Fade In)
-            if (crosshairCanvasGroup != null)
-                crosshairCanvasGroup.alpha = Mathf.Lerp(crosshairCanvasGroup.alpha, 1f, Time.deltaTime * fadeSpeed);
+            if (chargeBarFill != null)
+            {
+                float t = Mathf.Clamp01(currentChargeTime / bowChargeDuration);
+                chargeBarFill.rectTransform.anchorMax = new Vector2(t, 1f);
+            }
         }
 
         // 3. SOLTA O BOTÃO (Momento de decisão)
@@ -186,9 +211,19 @@ public class CombatScript : MonoBehaviour
 
     private void ExecuteShot()
     {
+        // Guarda a direção AGORA, enquanto a câmera ainda está na posição de mira
+        if (rangedFirePoint != null)
+        {
+            Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+            int mask = ~LayerMask.GetMask("player");
+            storedShotDirection = Physics.Raycast(ray, out RaycastHit hit, 100f, mask)
+                ? (hit.point - rangedFirePoint.position).normalized
+                : ray.direction;
+        }
+
         isChargingShot = false;
         controller.SetAiming(false);
-        
+
         // Esconde UI e Zoom
         if (crosshairUI != null) crosshairUI.SetActive(false);
         if (camScript != null) camScript.SetAimingCamera(false);
@@ -270,30 +305,7 @@ public class CombatScript : MonoBehaviour
     {
         if (rangedFirePoint == null || projectilePrefab == null) return;
 
-        // 1. Cria um raio saindo do centro exato da tela da câmera
-        Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-        Vector3 targetPoint;
-
-        // 2. A MÁGICA AQUI: Diz para o Raycast acertar tudo, EXCETO a Layer "Player"
-        // Certifique-se de que o nome da sua Layer está escrito exatamente assim (maiúsculas/minúsculas importam)
-        int aimLayerMask = ~LayerMask.GetMask("player");
-
-        // 3. Faz o Raycast passando a nossa aimLayerMask como filtro
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f, aimLayerMask))
-        {
-            targetPoint = hit.point; // O alvo é a parede/chão/inimigo
-            Debug.Log("<color=red>[MIRA] O raio da câmera bateu em: </color>" + hit.collider.name);
-        }
-        else
-        {
-            targetPoint = ray.GetPoint(100f); 
-        }
-
-        // 4. Calcula a direção exata
-        Vector3 directionToTarget = targetPoint - rangedFirePoint.position;
-
-        // 5. Instancia a flecha olhando para o alvo
-        GameObject projectile = Instantiate(projectilePrefab, rangedFirePoint.position, Quaternion.LookRotation(directionToTarget));
+        GameObject projectile = Instantiate(projectilePrefab, rangedFirePoint.position, Quaternion.LookRotation(storedShotDirection));
 
         // Passa o dano para a flecha (AQUI É A MUDANÇA)
         ProjectileScript projScript = projectile.GetComponent<ProjectileScript>();
