@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyDummy : MonoBehaviour
+public class EnemyDummy : MonoBehaviour, IDamageable
 {
     [Header("Status do Inimigo")]
     public int maxHealth = 100;
