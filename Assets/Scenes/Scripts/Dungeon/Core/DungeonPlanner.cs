@@ -107,10 +107,7 @@ namespace Game.Dungeon
                 {
                     PlannedRoom placed = TryFit(settings, layout, def, fe);
                     if (placed != null)
-                    {
-                        layout.Rooms.Add(placed);
                         return placed;
-                    }
                 }
             }
             return null;
@@ -138,6 +135,7 @@ namespace Game.Dungeon
                 // marca o socket de entrada da nova sala e o socket aberto como usados
                 placed.Sockets[i].Used = true;
                 fe.Socket.Used = true;
+                layout.Rooms.Add(placed);
                 return placed;
             }
             return null;
