@@ -44,7 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b92dc26ff193cf44fbcc341d04dac7b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChestMarker
-  chestPrefabOverride: {fileID: 0}
+  spawnChance: 10
+  chestOverride: {fileID: 0}
 --- !u!1 &533953979038511684
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,7 +180,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b92dc26ff193cf44fbcc341d04dac7b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChestMarker
-  chestPrefabOverride: {fileID: 0}
+  spawnChance: 23.7
+  chestOverride: {fileID: 0}
 --- !u!1 &2084911723067996155
 GameObject:
   m_ObjectHideFlags: 0
@@ -224,7 +226,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b92dc26ff193cf44fbcc341d04dac7b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChestMarker
-  chestPrefabOverride: {fileID: 0}
+  spawnChance: 20
+  chestOverride: {fileID: 0}
 --- !u!1 &3035318311765694524
 GameObject:
   m_ObjectHideFlags: 0
@@ -269,7 +272,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b92dc26ff193cf44fbcc341d04dac7b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChestMarker
-  chestPrefabOverride: {fileID: 4881954757842475642, guid: c07294c356856dd478c2f68ff3b530b4, type: 3}
+  spawnChance: 20
+  chestOverride: {fileID: 0}
 --- !u!1001 &1166713622338270474
 PrefabInstance:
   m_ObjectHideFlags: 0
