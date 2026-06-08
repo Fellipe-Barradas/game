@@ -18,7 +18,7 @@ public class DungeonGenerator : MonoBehaviour
     public NavMeshBaker navMeshBaker;
     public RoomPopulator populator;
     public Transform player;
-    public GameObject defaultChestPrefab;
+    public ChestTable chestTable;
 
     [Header("Seed")]
     public bool useRandomSeed = true;
@@ -63,7 +63,7 @@ public class DungeonGenerator : MonoBehaviour
         if (populator != null)
         {
             populator.encounterTable = encounterTable;
-            populator.defaultChestPrefab = defaultChestPrefab;
+            populator.chestTable = chestTable;
         }
         for (int i = 0; i < layout.Rooms.Count; i++)
         {
