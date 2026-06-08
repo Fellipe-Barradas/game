@@ -29668,7 +29668,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonBuilder
   root: {fileID: 1119194334}
-  socketCapPrefab: {fileID: 1755164648}
+  socketCapPrefab: {fileID: 1756666848962813053, guid: 771bd425fe3cb6d42bf5bb2fff6511c8, type: 3}
+  doorPrefab: {fileID: 1965886343184881424, guid: 2b4c37f80c83b564eaa3cf59a9267206, type: 3}
 --- !u!114 &1591704487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33967,11 +33968,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -629719859055844128, guid: 4224dfcf39b9ca848800011919f8cef9, type: 3}
---- !u!1 &1755164648 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2060045038521739175, guid: 3c0f09f1c25bb0e4e91b76d62293dc09, type: 3}
-  m_PrefabInstance: {fileID: 1908884383}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1756601356 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2727169242957871195, guid: 07ed467188201c645bef5a7b79d9c6a2, type: 3}

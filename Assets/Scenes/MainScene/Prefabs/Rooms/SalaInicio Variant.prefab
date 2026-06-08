@@ -97,6 +97,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wood Doorframe(Abrivel) Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 1965886343184881424, guid: 2b4c37f80c83b564eaa3cf59a9267206, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
