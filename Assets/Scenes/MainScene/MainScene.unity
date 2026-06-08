@@ -5872,8 +5872,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82782c301056bed479b39c3b03aaffeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bau
-  prataNoBau: 15
-  ouroNoBau: 1
+  data: {fileID: 0}
 --- !u!1 &203780682
 GameObject:
   m_ObjectHideFlags: 0
@@ -16795,8 +16794,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82782c301056bed479b39c3b03aaffeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bau
-  prataNoBau: 15
-  ouroNoBau: 1
+  data: {fileID: 0}
 --- !u!1 &890040209 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1708996142451622452, guid: 7a75fdd2ce80e67429969637b32a221f, type: 3}
@@ -21128,8 +21126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82782c301056bed479b39c3b03aaffeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bau
-  prataNoBau: 15
-  ouroNoBau: 1
+  data: {fileID: 0}
 --- !u!1 &1119194331
 GameObject:
   m_ObjectHideFlags: 0
@@ -23119,7 +23116,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1210753466
 RectTransform:
   m_ObjectHideFlags: 0
@@ -23133,7 +23130,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2079032218}
-  m_Father: {fileID: 128534704}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -25415,8 +25412,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82782c301056bed479b39c3b03aaffeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bau
-  prataNoBau: 15
-  ouroNoBau: 1
+  data: {fileID: 0}
 --- !u!1001 &1324924303
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -25536,8 +25532,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82782c301056bed479b39c3b03aaffeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bau
-  prataNoBau: 15
-  ouroNoBau: 1
+  data: {fileID: 0}
 --- !u!64 &1338499795
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -29641,7 +29636,7 @@ MonoBehaviour:
   navMeshBaker: {fileID: 1119194332}
   populator: {fileID: 1591704487}
   player: {fileID: 128534704}
-  defaultChestPrefab: {fileID: 6103957729754897301, guid: 4576f68b875dbed41b18006c7805ced8, type: 3}
+  chestTable: {fileID: 11400000, guid: a1f9d1b53fb28984eacdb508bf46f3d9, type: 2}
   useRandomSeed: 1
   seed: 12345
   generateOnStart: 1
@@ -29687,7 +29682,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomPopulator
   encounterTable: {fileID: 0}
-  defaultChestPrefab: {fileID: 0}
+  chestTable: {fileID: 0}
 --- !u!1 &1605703354 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7250610307528100295, guid: 7a75fdd2ce80e67429969637b32a221f, type: 3}
@@ -30538,8 +30533,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82782c301056bed479b39c3b03aaffeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bau
-  prataNoBau: 15
-  ouroNoBau: 1
+  data: {fileID: 0}
 --- !u!4 &1677477115 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1130582701823157809, guid: 9f6eb9b041cc23f4080df303337cfcba, type: 3}
@@ -33574,9 +33568,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1253129368}
-    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1210753466}
     - targetCorrespondingSourceObject: {fileID: -7208441673433506407, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
       insertIndex: 1
       addedObject: {fileID: 2119660570}
@@ -41359,3 +41350,4 @@ SceneRoots:
   - {fileID: 1119194334}
   - {fileID: 1591704485}
   - {fileID: 1978782523}
+  - {fileID: 1210753466}

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf1318e43aac73e4ab2650c8993e6800, type: 3}
+  m_Name: ChestQuadrado
+  m_EditorClassIdentifier: Assembly-CSharp::ChestSO
+  displayName: BauQuadrado
+  prefab: {fileID: 6103957729754897301, guid: 4576f68b875dbed41b18006c7805ced8, type: 3}
+  weight: 1
+  minDepth: 0
+  prata:
+    chance: 50.6
+    amount: 10
+  ouro:
+    chance: 25
+    amount: 5
+  fragmentos:
+    chance: 15
+    amount: 5
+  itens:
+  - item: {fileID: 11400000, guid: 05612c98bded5e44fbc9cfce8810d9fd, type: 2}
+    chance: 24
+    amount: 1

@@ -6,7 +6,7 @@ using Game.Dungeon;
 public class RoomPopulator : MonoBehaviour
 {
     public EncounterTable encounterTable;
-    public GameObject defaultChestPrefab;
+    public ChestTable chestTable;
 
     /// <summary>
     /// Popula a sala. roomInstance = GameObject instanciado; type/depth vêm do PlannedRoom;
@@ -35,9 +35,17 @@ public class RoomPopulator : MonoBehaviour
         // Baús.
         foreach (ChestMarker c in roomInstance.GetComponentsInChildren<ChestMarker>(true))
         {
-            GameObject prefab = c.chestPrefabOverride != null ? c.chestPrefabOverride : defaultChestPrefab;
-            if (prefab != null)
-                Instantiate(prefab, c.transform.position, c.transform.rotation, roomInstance.transform);
+            // PROB #1 — esta posição vira baú?
+            if (rng.NextDouble() * 100.0 >= c.spawnChance) continue;
+
+            // PROB #2 — qual baú? (override do marker tem prioridade sobre a tabela)
+            ChestSO pick = c.chestOverride != null
+                ? c.chestOverride
+                : (chestTable != null ? chestTable.Pick(depth, rng) : null);
+            if (pick == null || pick.prefab == null) continue;
+
+            GameObject go = Instantiate(pick.prefab, c.transform.position, c.transform.rotation, roomInstance.transform);
+            if (go.TryGetComponent<Bau>(out var bau)) bau.data = pick;
         }
 
         // Armadilhas com override (as fixas já vêm no prefab).
