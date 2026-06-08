@@ -2,9 +2,8 @@ using UnityEngine;
 
 public class Bau : MonoBehaviour, IInteractable
 {
-    [Header("Configurações Base")]
-    public int prataNoBau = 15;
-    public int ouroNoBau = 1;
+    [Tooltip("Dados de loot. Injetado pelo RoomPopulator no spawn; pode servir de padrão no prefab.")]
+    public ChestSO data;
 
     private bool jaFoiAberto = false;
 
@@ -21,30 +20,49 @@ public class Bau : MonoBehaviour, IInteractable
     {
         jaFoiAberto = true;
 
-        int dropPrata = 0;
-        int dropOuro = 0;
-        int dropFragmentos = 0;
+        if (data == null)
+        {
+            Debug.LogWarning("[Bau] sem ChestSO 'data' — baú vazio.", this);
+            gameObject.SetActive(false);
+            return;
+        }
 
-        if (Random.Range(0f, 100f) <= 80f)
-            dropPrata = prataNoBau;
+        int dropPrata = RollCoin(data.prata);
+        int dropOuro = RollCoin(data.ouro);
+        int dropFragmentos = RollCoin(data.fragmentos);
 
-        if (Random.Range(0f, 100f) <= 50f)
-            dropOuro = ouroNoBau;
-
-        float sorteioFragmento = Random.Range(0f, 100f);
-        if (sorteioFragmento <= 10f)
-            dropFragmentos = 15;
-        else if (sorteioFragmento <= 30f)
-            dropFragmentos = 10;
-
-        if (dropPrata == 0 && dropOuro == 0 && dropFragmentos == 0)
-            Debug.Log("o bau esta vazio");
-        else
+        if (dropPrata > 0 || dropOuro > 0 || dropFragmentos > 0)
         {
             Debug.Log($"Baú aberto! Drops: {dropPrata} Prata | {dropOuro} Ouro | {dropFragmentos} Fragmentos");
             GerenciadorMoedas.Instancia?.AdicionarDrops(dropPrata, dropOuro, dropFragmentos);
         }
 
+        if (data.itens != null && data.itens.Count > 0)
+        {
+            Inventory inv = FindPlayerInventory();
+            foreach (ItemDrop d in data.itens)
+            {
+                if (d.item == null || d.amount <= 0) continue;
+                if (Random.Range(0f, 100f) <= d.chance)
+                {
+                    if (inv != null) inv.AddItem(d.item, d.amount);
+                    else Debug.LogWarning("[Bau] item dropado mas player sem Inventory.", this);
+                }
+            }
+        }
+
         gameObject.SetActive(false);
+    }
+
+    private static int RollCoin(CoinDrop c)
+    {
+        if (c.amount <= 0) return 0;
+        return Random.Range(0f, 100f) <= c.chance ? c.amount : 0;
+    }
+
+    private static Inventory FindPlayerInventory()
+    {
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+        return p != null ? p.GetComponent<Inventory>() : null;
     }
 }
