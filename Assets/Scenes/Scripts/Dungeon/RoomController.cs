@@ -25,7 +25,12 @@ public class RoomController : MonoBehaviour
             enemies.Add(e);
         }
         doors.Clear();
-        doors.AddRange(GetComponentsInChildren<DoorController>(true));
+    }
+
+    /// <summary>Registra uma porta desta sala (chamado pelo gerador após instanciar as portas).</summary>
+    public void RegisterDoor(DoorController d)
+    {
+        if (d != null && !doors.Contains(d)) doors.Add(d);
     }
 
     private void OnTriggerEnter(Collider other)
