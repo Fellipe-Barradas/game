@@ -294,10 +294,8 @@ public class CombatScript : MonoBehaviour
             if (hitSparks != null)
                 Instantiate(hitSparks, enemy.ClosestPoint(transform.position), Quaternion.identity);
 
-            if (enemy.TryGetComponent<EnemyDummy>(out EnemyDummy e))
-                e.TakeDamage(damage);
-            if (enemy.TryGetComponent<BossEnemy>(out BossEnemy boss))
-                boss.TakeDamage(damage);    
+            IDamageable alvo = enemy.GetComponent<IDamageable>();
+            alvo?.TakeDamage(damage);
         }
     }
 
