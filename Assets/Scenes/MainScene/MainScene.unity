@@ -23119,7 +23119,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1210753466
 RectTransform:
   m_ObjectHideFlags: 0
@@ -23133,7 +23133,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2079032218}
-  m_Father: {fileID: 128534704}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -33574,9 +33574,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1253129368}
-    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1210753466}
     - targetCorrespondingSourceObject: {fileID: -7208441673433506407, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
       insertIndex: 1
       addedObject: {fileID: 2119660570}
@@ -41359,3 +41356,4 @@ SceneRoots:
   - {fileID: 1119194334}
   - {fileID: 1591704485}
   - {fileID: 1978782523}
+  - {fileID: 1210753466}
