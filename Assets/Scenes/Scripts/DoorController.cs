@@ -1,36 +1,57 @@
 using UnityEngine;
 
-public class DoorController : MonoBehaviour, IInteractable
+/// <summary>
+/// Porta entre salas: abre por presença do player (gatilho de proximidade) e fica aberta.
+/// Tranca/fecha sob lockdown de combate (RoomController.SetLocked via contador).
+/// </summary>
+public class DoorController : MonoBehaviour
 {
-    [SerializeField] private bool canCloseAgain = true;
-
     private Animator anim;
     private bool isOpen;
-    private bool locked;
+    private int lockCount;        // trancada enquanto > 0
+    private bool playerInRange;
 
-    public string ActionLabel => isOpen ? "close" : "open";
-    public bool CanInteract => !isOpen || canCloseAgain;
+    private void Awake() => anim = GetComponent<Animator>();
 
-    /// <summary>Trava/destrava a porta (usado por salas de combate até serem limpas).</summary>
-    public void SetLocked(bool value) => locked = value;
-
-    private void Start()
+    private void OnTriggerEnter(Collider other)
     {
-        anim = GetComponent<Animator>();
+        if (!other.CompareTag("Player")) return;
+        playerInRange = true;
+        if (lockCount == 0) Open();
     }
 
-    public void Interact()
+    private void OnTriggerExit(Collider other)
     {
-        if (locked) return;
-        if (!CanInteract) return;
+        if (!other.CompareTag("Player")) return;
+        playerInRange = false;   // não fecha — fica aberta
+    }
 
-        if (anim == null)
+    /// <summary>Trancar fecha a porta; destrancar reabre se o player ainda estiver perto.</summary>
+    public void SetLocked(bool value)
+    {
+        if (value)
         {
-            Debug.LogWarning("DoorController precisa de um Animator no mesmo GameObject.", this);
-            return;
+            lockCount++;
+            if (lockCount == 1) Close();
         }
+        else
+        {
+            lockCount = Mathf.Max(0, lockCount - 1);
+            if (lockCount == 0 && playerInRange) Open();
+        }
+    }
 
-        isOpen = !isOpen;
-        anim.SetTrigger("change");
+    private void Open()
+    {
+        if (isOpen) return;
+        isOpen = true;
+        if (anim != null) anim.SetTrigger("change");
+    }
+
+    private void Close()
+    {
+        if (!isOpen) return;
+        isOpen = false;
+        if (anim != null) anim.SetTrigger("change");
     }
 }
