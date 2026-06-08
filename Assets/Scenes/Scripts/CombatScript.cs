@@ -286,18 +286,18 @@ public class CombatScript : MonoBehaviour
 
         foreach (Collider enemy in hits)
         {
+            IDamageable alvo = enemy.GetComponentInParent<IDamageable>();
+            if (alvo == null) continue;
+
             Debug.Log($"[HIT] Inimigo atingido: {enemy.name} - Dano: {damage}");
-            
+
             if (audioSource != null && currentWeapon?.hitSound != null)
                 audioSource.PlayOneShot(currentWeapon.hitSound);
 
             if (hitSparks != null)
                 Instantiate(hitSparks, enemy.ClosestPoint(transform.position), Quaternion.identity);
 
-            if (enemy.TryGetComponent<EnemyDummy>(out EnemyDummy e))
-                e.TakeDamage(damage);
-            if (enemy.TryGetComponent<BossEnemy>(out BossEnemy boss))
-                boss.TakeDamage(damage);    
+            alvo.TakeDamage(damage);
         }
     }
 

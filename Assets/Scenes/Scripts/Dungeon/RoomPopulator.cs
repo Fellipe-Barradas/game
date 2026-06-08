@@ -1,0 +1,55 @@
+using System.Collections.Generic;
+using UnityEngine;
+using Game.Dungeon;
+
+/// <summary>Popula uma sala instanciada a partir dos markers, usando a EncounterTable.</summary>
+public class RoomPopulator : MonoBehaviour
+{
+    public EncounterTable encounterTable;
+    public GameObject defaultChestPrefab;
+
+    /// <summary>
+    /// Popula a sala. roomInstance = GameObject instanciado; type/depth vêm do PlannedRoom;
+    /// rng compartilhado garante determinismo por seed.
+    /// </summary>
+    public void Populate(GameObject roomInstance, RoomType type, int depth, System.Random rng)
+    {
+        var spawnedEnemies = new List<GameObject>();
+
+        // Inimigos (qualquer sala com EnemyMarker; orçamento escala com profundidade).
+        var enemyMarkers = roomInstance.GetComponentsInChildren<EnemyMarker>(true);
+        if (encounterTable != null && enemyMarkers.Length > 0)
+        {
+            int budget = encounterTable.BudgetForDepth(depth);
+            foreach (EnemyMarker m in enemyMarkers)
+            {
+                if (budget <= 0) break;
+                EnemySO pick = encounterTable.Pick(depth, budget, rng);
+                if (pick == null) break;
+                budget -= pick.budgetCost;
+                GameObject e = Instantiate(pick.prefab, m.transform.position, m.transform.rotation, roomInstance.transform);
+                spawnedEnemies.Add(e);
+            }
+        }
+
+        // Baús.
+        foreach (ChestMarker c in roomInstance.GetComponentsInChildren<ChestMarker>(true))
+        {
+            GameObject prefab = c.chestPrefabOverride != null ? c.chestPrefabOverride : defaultChestPrefab;
+            if (prefab != null)
+                Instantiate(prefab, c.transform.position, c.transform.rotation, roomInstance.transform);
+        }
+
+        // Armadilhas com override (as fixas já vêm no prefab).
+        foreach (TrapMarker t in roomInstance.GetComponentsInChildren<TrapMarker>(true))
+        {
+            if (t.trapPrefabOverride != null)
+                Instantiate(t.trapPrefabOverride, t.transform.position, t.transform.rotation, roomInstance.transform);
+        }
+
+        // Liga o controlador de sala.
+        RoomController rc = roomInstance.GetComponent<RoomController>();
+        if (rc == null) rc = roomInstance.AddComponent<RoomController>();
+        rc.Configure(spawnedEnemies, lockDoors: type == RoomType.Combate || type == RoomType.Boss);
+    }
+}

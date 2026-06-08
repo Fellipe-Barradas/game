@@ -6,9 +6,13 @@ public class DoorController : MonoBehaviour, IInteractable
 
     private Animator anim;
     private bool isOpen;
+    private bool locked;
 
     public string ActionLabel => isOpen ? "close" : "open";
     public bool CanInteract => !isOpen || canCloseAgain;
+
+    /// <summary>Trava/destrava a porta (usado por salas de combate até serem limpas).</summary>
+    public void SetLocked(bool value) => locked = value;
 
     private void Start()
     {
@@ -17,6 +21,7 @@ public class DoorController : MonoBehaviour, IInteractable
 
     public void Interact()
     {
+        if (locked) return;
         if (!CanInteract) return;
 
         if (anim == null)
