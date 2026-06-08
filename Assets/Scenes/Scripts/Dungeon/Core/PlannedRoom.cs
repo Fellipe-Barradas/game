@@ -19,4 +19,12 @@ namespace Game.Dungeon
         public Bounds WorldBounds;
         public List<PlannedSocket> Sockets = new List<PlannedSocket>();
     }
+
+    public class PlannedDoorway
+    {
+        public Vector3 WorldPosition;
+        public CardinalDirection WorldDirection;
+        public PlannedRoom RoomA;   // sala existente (dona do socket aberto)
+        public PlannedRoom RoomB;   // sala recém-colocada
+    }
 }

@@ -8,5 +8,6 @@ namespace Game.Dungeon
         public int Seed;
         public List<PlannedRoom> Rooms = new List<PlannedRoom>();
         public List<PlannedSocket> OpenSockets = new List<PlannedSocket>(); // a selar com parede
+        public List<PlannedDoorway> Doorways = new List<PlannedDoorway>();
     }
 }

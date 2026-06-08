@@ -136,6 +136,13 @@ namespace Game.Dungeon
                 placed.Sockets[i].Used = true;
                 fe.Socket.Used = true;
                 layout.Rooms.Add(placed);
+                layout.Doorways.Add(new PlannedDoorway
+                {
+                    WorldPosition = fe.Socket.WorldPosition,
+                    WorldDirection = fe.Socket.WorldDirection,
+                    RoomA = fe.Owner,
+                    RoomB = placed,
+                });
                 return placed;
             }
             return null;

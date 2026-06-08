@@ -139,4 +139,18 @@ public class DungeonPlannerTests
             Assert.AreEqual(a.Rooms[i].Yaw, b.Rooms[i].Yaw);
         }
     }
+
+    [Test]
+    public void Plan_DoorwaysFormamArvore()
+    {
+        DungeonLayout layout = DungeonPlanner.Plan(Catalog(), Settings(), seed: 5);
+        Assert.IsTrue(layout.Success);
+        // Masmorra é uma árvore: cada sala (exceto a inicial) entra por exatamente 1 conexão.
+        Assert.AreEqual(layout.Rooms.Count - 1, layout.Doorways.Count);
+        foreach (PlannedDoorway d in layout.Doorways)
+        {
+            Assert.Contains(d.RoomA, layout.Rooms);
+            Assert.Contains(d.RoomB, layout.Rooms);
+        }
+    }
 }
