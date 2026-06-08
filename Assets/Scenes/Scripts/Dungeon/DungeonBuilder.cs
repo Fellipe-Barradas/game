@@ -37,7 +37,7 @@ public class DungeonBuilder : MonoBehaviour
             foreach (PlannedSocket s in layout.OpenSockets)
             {
                 GameObject cap = Instantiate(socketCapPrefab, s.WorldPosition, Quaternion.identity, root);
-                OrientBySocket(cap, s.WorldDirection);
+                SnapBySocket(cap, s.WorldPosition, s.WorldDirection);
             }
         }
 
@@ -62,44 +62,59 @@ public class DungeonBuilder : MonoBehaviour
         foreach (PlannedDoorway dw in layout.Doorways)
         {
             GameObject go = Instantiate(doorPrefab, dw.WorldPosition, Quaternion.identity, root);
-            OrientBySocket(go, dw.WorldDirection);
+            SnapBySocket(go, dw.WorldPosition, dw.WorldDirection);
             DoorController door = go.GetComponent<DoorController>();
 
             map.TryGetValue(dw.RoomA, out GameObject ra);
             map.TryGetValue(dw.RoomB, out GameObject rb);
             result.Add(new PlacedDoor { Door = door, RoomA = ra, RoomB = rb });
         }
+
+        // DIAGNÓSTICO (temporário): verifica se algum tampão coincide com um vão de porta.
+        int coincidencias = 0;
+        foreach (PlannedDoorway dw in layout.Doorways)
+            foreach (PlannedSocket os in layout.OpenSockets)
+                if ((dw.WorldPosition - os.WorldPosition).sqrMagnitude < 0.25f) coincidencias++;
+        Debug.Log($"[DungeonBuilder] salas={roomInstances.Count} portas={layout.Doorways.Count} " +
+                  $"tampoes={layout.OpenSockets.Count} coincidencias_porta/tampao={coincidencias}");
+
         return result;
     }
 
     /// <summary>
-    /// Rotaciona o objeto recém-instanciado (em rotação identidade) para que o DoorSocket
-    /// interno do prefab aponte para 'worldDir'. Funciona em qualquer rotação de sala,
-    /// pois usa o apontador autorado no próprio prefab. Sem DoorSocket, cai no +Z (LookRotation).
+    /// Encaixa o objeto recém-instanciado (rotação identidade) usando o DoorSocket interno do
+    /// prefab como referência: rotaciona para o socket apontar em 'worldDir' e desloca para o
+    /// socket coincidir com 'targetPos' (independe do pivô do prefab). Funciona em qualquer
+    /// rotação de sala. Sem DoorSocket: posiciona em targetPos e cai no +Z (LookRotation).
     /// </summary>
-    private static void OrientBySocket(GameObject instance, CardinalDirection worldDir)
+    private static void SnapBySocket(GameObject instance, Vector3 targetPos, CardinalDirection worldDir)
     {
         Transform t = instance.transform;
         Vector3 target = CardinalDirections.ToVector(worldDir);
         target.y = 0f;
-        if (target.sqrMagnitude < 0.0001f) return;
 
         DoorSocket socket = instance.GetComponentInChildren<DoorSocket>(true);
         if (socket == null)
         {
-            t.rotation = Quaternion.LookRotation(target.normalized);   // fallback: +Z é a frente
+            t.position = targetPos;
+            if (target.sqrMagnitude > 0.0001f) t.rotation = Quaternion.LookRotation(target.normalized);
             return;
         }
 
-        // Direção que o socket aponta no estado atual (identidade), seguindo a convenção do gizmo.
-        Vector3 socketFwd = socket.transform.parent != null
-            ? socket.transform.parent.TransformDirection(CardinalDirections.ToVector(socket.direction))
-            : CardinalDirections.ToVector(socket.direction);
-        socketFwd.y = 0f;
-        if (socketFwd.sqrMagnitude < 0.0001f) return;
+        // 1. Rotação: alinhar o apontador do socket à direção do vão (convenção do gizmo).
+        if (target.sqrMagnitude > 0.0001f)
+        {
+            Vector3 socketFwd = socket.transform.parent != null
+                ? socket.transform.parent.TransformDirection(CardinalDirections.ToVector(socket.direction))
+                : CardinalDirections.ToVector(socket.direction);
+            socketFwd.y = 0f;
+            if (socketFwd.sqrMagnitude > 0.0001f)
+                t.rotation = Quaternion.FromToRotation(socketFwd.normalized, target.normalized) * t.rotation;
+        }
 
-        Quaternion delta = Quaternion.FromToRotation(socketFwd.normalized, target.normalized);
-        t.rotation = delta * t.rotation;
+        // 2. Posição: deslocar para o DoorSocket interno coincidir com o socket da sala.
+        //    (lê a posição do socket já rotacionado, depois corrige a translação)
+        t.position += targetPos - socket.transform.position;
     }
 
     public void Clear()
