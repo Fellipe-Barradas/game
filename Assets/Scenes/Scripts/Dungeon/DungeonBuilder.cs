@@ -36,6 +36,8 @@ public class DungeonBuilder : MonoBehaviour
         {
             foreach (PlannedSocket s in layout.OpenSockets)
             {
+                // Não sela onde há uma porta: o vão é passagem, não parede (a porta preenche).
+                if (IsAtDoorway(layout, s.WorldPosition)) continue;
                 GameObject cap = Instantiate(socketCapPrefab, s.WorldPosition, Quaternion.identity, root);
                 SnapBySocket(cap, s.WorldPosition, s.WorldDirection);
             }
@@ -70,15 +72,15 @@ public class DungeonBuilder : MonoBehaviour
             result.Add(new PlacedDoor { Door = door, RoomA = ra, RoomB = rb });
         }
 
-        // DIAGNÓSTICO (temporário): verifica se algum tampão coincide com um vão de porta.
-        int coincidencias = 0;
-        foreach (PlannedDoorway dw in layout.Doorways)
-            foreach (PlannedSocket os in layout.OpenSockets)
-                if ((dw.WorldPosition - os.WorldPosition).sqrMagnitude < 0.25f) coincidencias++;
-        Debug.Log($"[DungeonBuilder] salas={roomInstances.Count} portas={layout.Doorways.Count} " +
-                  $"tampoes={layout.OpenSockets.Count} coincidencias_porta/tampao={coincidencias}");
-
         return result;
+    }
+
+    /// <summary>True se 'pos' coincide (até 0,5 m) com algum vão de porta — ali não se sela parede.</summary>
+    private static bool IsAtDoorway(DungeonLayout layout, Vector3 pos)
+    {
+        foreach (PlannedDoorway dw in layout.Doorways)
+            if ((dw.WorldPosition - pos).sqrMagnitude < 0.25f) return true;
+        return false;
     }
 
     /// <summary>
