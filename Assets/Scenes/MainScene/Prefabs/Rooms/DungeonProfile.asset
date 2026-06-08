@@ -23,6 +23,9 @@ MonoBehaviour:
   - type: 2
     min: 0
     max: 20
+  - type: 4
+    min: 1
+    max: 1
   - type: 5
     min: 1
     max: 1

@@ -29637,7 +29637,7 @@ MonoBehaviour:
   populator: {fileID: 1591704487}
   player: {fileID: 128534704}
   chestTable: {fileID: 11400000, guid: a1f9d1b53fb28984eacdb508bf46f3d9, type: 2}
-  useRandomSeed: 1
+  useRandomSeed: 0
   seed: 12345
   generateOnStart: 1
 --- !u!4 &1591704485
