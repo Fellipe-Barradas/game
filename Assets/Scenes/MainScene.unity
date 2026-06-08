@@ -38381,6 +38381,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDummy
   maxHealth: 100
+  dropPrata: 0
+  dropOuro: 0
+  dropFragmentos: 0
   currentState: 0
   agent: {fileID: 0}
   attackRange: 2
@@ -38392,6 +38395,8 @@ MonoBehaviour:
   dashForce: 5
   enemyRenderer: {fileID: 0}
   flashDuration: 0.1
+  detectionRange: 10
+  chaseRange: 15
 --- !u!195 &1730095063
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -41363,12 +41368,12 @@ MonoBehaviour:
   audioSource: {fileID: 357969521}
   blockSound: {fileID: 0}
   hurtSound: {fileID: 0}
+  playerAudioGroup: {fileID: 0}
   crosshairUI: {fileID: 2079032215}
   camScript: {fileID: 381766069}
   chargeBarFill: {fileID: 0}
   crosshairCanvasGroup: {fileID: 2079032219}
   bowChargeDuration: 1.2
-  fadeSpeed: 5
 --- !u!114 &1891193570
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -46331,6 +46336,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5c4782b43ff22704e92dac84fc27da83, type: 3}
+--- !u!1001 &7375958983223027511
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6900228541253085212, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -9.908697
+      objectReference: {fileID: 0}
+    - target: {fileID: 6900228541253085212, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.19
+      objectReference: {fileID: 0}
+    - target: {fileID: 6900228541253085212, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -2.2523878
+      objectReference: {fileID: 0}
+    - target: {fileID: 6900228541253085212, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6900228541253085212, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6900228541253085212, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6900228541253085212, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6900228541253085212, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6900228541253085212, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6900228541253085212, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6972734762851094794, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
+      propertyPath: m_Name
+      value: Inimigo Arcano
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 54c8095e35e30d44d9d07e0215d551d2, type: 3}
 --- !u!1001 &8969844684306796617
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -46408,3 +46470,5 @@ SceneRoots:
   - {fileID: 232028927}
   - {fileID: 970650180}
   - {fileID: 30267996}
+  - {fileID: 1730095061}
+  - {fileID: 7375958983223027511}
