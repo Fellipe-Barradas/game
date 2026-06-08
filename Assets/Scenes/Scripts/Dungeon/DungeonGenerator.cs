@@ -71,7 +71,15 @@ public class DungeonGenerator : MonoBehaviour
             populator.Populate(instances[i], pr.Definition.Type, pr.Depth, rng);
         }
 
-        // 4. Posicionar o player na sala de início.
+        // 4. Portas entre salas (depois do bake e dos RoomControllers existirem).
+        List<PlacedDoor> doors = builder.BuildDoors(layout, instances);
+        foreach (PlacedDoor pd in doors)
+        {
+            if (pd.RoomA != null) pd.RoomA.GetComponent<RoomController>()?.RegisterDoor(pd.Door);
+            if (pd.RoomB != null) pd.RoomB.GetComponent<RoomController>()?.RegisterDoor(pd.Door);
+        }
+
+        // 5. Posicionar o player na sala de início.
         PlacePlayerAtStart(layout, instances);
     }
 
