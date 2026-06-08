@@ -5,7 +5,7 @@ public class ProjectileScript : MonoBehaviour
     [Header("Configurações do Projétil")]
     public float speed = 20f;
     public float lifeTime = 5f;
-    
+
     [HideInInspector]
     public int damage;
 
