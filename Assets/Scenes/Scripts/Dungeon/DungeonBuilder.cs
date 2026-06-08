@@ -16,8 +16,12 @@ public class DungeonBuilder : MonoBehaviour
     public Transform root;
     [Tooltip("Prefab de tampa/parede para sockets que ficaram abertos.")]
     public GameObject socketCapPrefab;
+    [Tooltip("Ajuste de rotação (yaw, graus) do tampão, caso a face do prefab não esteja no +Z.")]
+    public float socketCapYaw = 0f;
     [Tooltip("Prefab da porta colocada nos vãos que conectam duas salas.")]
     public GameObject doorPrefab;
+    [Tooltip("Ajuste de rotação (yaw, graus) da porta, caso a face do prefab não esteja no +Z.")]
+    public float doorYaw = 0f;
 
     /// <summary>Instancia o layout. Retorna a sala raiz de cada PlannedRoom na mesma ordem de layout.Rooms.</summary>
     public List<GameObject> Build(DungeonLayout layout)
@@ -37,9 +41,10 @@ public class DungeonBuilder : MonoBehaviour
             foreach (PlannedSocket s in layout.OpenSockets)
             {
                 Vector3 dir = CardinalDirections.ToVector(s.WorldDirection);
-                Quaternion rot = dir.sqrMagnitude > 0.001f
+                Quaternion baseRot = dir.sqrMagnitude > 0.001f
                     ? Quaternion.LookRotation(dir)
                     : Quaternion.identity;
+                Quaternion rot = baseRot * Quaternion.Euler(0, socketCapYaw, 0);
                 Instantiate(socketCapPrefab, s.WorldPosition, rot, root);
             }
         }
@@ -65,9 +70,10 @@ public class DungeonBuilder : MonoBehaviour
         foreach (PlannedDoorway dw in layout.Doorways)
         {
             Vector3 dir = CardinalDirections.ToVector(dw.WorldDirection);
-            Quaternion rot = dir.sqrMagnitude > 0.001f
+            Quaternion baseRot = dir.sqrMagnitude > 0.001f
                 ? Quaternion.LookRotation(dir)
                 : Quaternion.identity;
+            Quaternion rot = baseRot * Quaternion.Euler(0, doorYaw, 0);
 
             GameObject go = Instantiate(doorPrefab, dw.WorldPosition, rot, root);
             DoorController door = go.GetComponent<DoorController>();
