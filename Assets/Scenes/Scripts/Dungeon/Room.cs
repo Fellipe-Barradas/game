@@ -17,9 +17,18 @@ public class Room : MonoBehaviour
         var sockets = new List<RoomSocketData>();
         foreach (DoorSocket s in GetComponentsInChildren<DoorSocket>(true))
         {
+            // A direção do socket deve ser lida do MESMO jeito que o gizmo e o SnapBySocket:
+            // a cardeal 'direction' interpretada no espaço do PARENT do socket (o holder de
+            // parede pode estar rotacionado). Ler 's.direction' cru ignora essa rotação e faz
+            // sockets laterais virarem Leste/Oeste — por isso o tampão/porta não girava neles.
+            Vector3 worldDir = s.transform.parent != null
+                ? s.transform.parent.TransformDirection(CardinalDirections.ToVector(s.direction))
+                : CardinalDirections.ToVector(s.direction);
+            CardinalDirection dir = NearestCardinal(transform.InverseTransformDirection(worldDir));
+
             sockets.Add(new RoomSocketData(
                 transform.InverseTransformPoint(s.transform.position),
-                s.direction));
+                dir));
         }
 
         Bounds local = boundsCollider != null
@@ -34,5 +43,14 @@ public class Room : MonoBehaviour
             Weight = weight,
             PrefabRef = prefabRef
         };
+    }
+
+    /// <summary>Cardeal mais próxima de um vetor no plano XZ (North=+Z, East=+X, South=-Z, West=-X).</summary>
+    private static CardinalDirection NearestCardinal(Vector3 v)
+    {
+        v.y = 0f;
+        if (Mathf.Abs(v.x) >= Mathf.Abs(v.z))
+            return v.x >= 0f ? CardinalDirection.East : CardinalDirection.West;
+        return v.z >= 0f ? CardinalDirection.North : CardinalDirection.South;
     }
 }

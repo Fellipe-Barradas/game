@@ -103,9 +103,8 @@ public class DungeonBuilder : MonoBehaviour
             return;
         }
 
-        // 1. Rotação: yaw puro que alinha o apontador do socket à direção do vão.
-        //    Usa SignedAngle+AngleAxis (não FromToRotation) para evitar que o caso antiparalelo
-        //    (180°) escolha um eixo arbitrário (X/Z) e tombe/espelhe a peça.
+        // 1. Rotação: yaw puro que alinha o apontador do socket (interpretado no espaço do seu
+        //    parent, igual ao gizmo e ao Room.BuildDefinition) à direção do vão.
         Vector3 socketFwd = socket.transform.parent != null
             ? socket.transform.parent.TransformDirection(CardinalDirections.ToVector(socket.direction))
             : CardinalDirections.ToVector(socket.direction);
@@ -117,7 +116,6 @@ public class DungeonBuilder : MonoBehaviour
         }
 
         // 2. Posição: deslocar para o DoorSocket interno coincidir com o socket da sala.
-        //    (lê a posição do socket já rotacionado, depois corrige a translação)
         t.position += targetPos - socket.transform.position;
     }
 
