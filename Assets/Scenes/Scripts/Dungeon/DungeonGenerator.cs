@@ -60,7 +60,11 @@ public class DungeonGenerator : MonoBehaviour
 
         // 3. Popular (inimigos desativados; ativam por trigger).
         var rng = new System.Random(layout.Seed);
-        if (populator != null) populator.defaultChestPrefab = defaultChestPrefab;
+        if (populator != null)
+        {
+            populator.encounterTable = encounterTable;
+            populator.defaultChestPrefab = defaultChestPrefab;
+        }
         for (int i = 0; i < layout.Rooms.Count; i++)
         {
             PlannedRoom pr = layout.Rooms[i];
