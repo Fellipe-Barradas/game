@@ -14,14 +14,10 @@ public class DungeonBuilder : MonoBehaviour
 {
     [Tooltip("Pai de todas as salas instanciadas (também alvo do NavMeshSurface).")]
     public Transform root;
-    [Tooltip("Prefab de tampa/parede para sockets que ficaram abertos.")]
+    [Tooltip("Prefab de tampa/parede para sockets que ficaram abertos. Deve conter um DoorSocket apontando para a face visível.")]
     public GameObject socketCapPrefab;
-    [Tooltip("Ajuste de rotação (yaw, graus) do tampão, caso a face do prefab não esteja no +Z.")]
-    public float socketCapYaw = 0f;
-    [Tooltip("Prefab da porta colocada nos vãos que conectam duas salas.")]
+    [Tooltip("Prefab da porta colocada nos vãos que conectam duas salas. Deve conter um DoorSocket apontando para a frente da porta.")]
     public GameObject doorPrefab;
-    [Tooltip("Ajuste de rotação (yaw, graus) da porta, caso a face do prefab não esteja no +Z.")]
-    public float doorYaw = 0f;
 
     /// <summary>Instancia o layout. Retorna a sala raiz de cada PlannedRoom na mesma ordem de layout.Rooms.</summary>
     public List<GameObject> Build(DungeonLayout layout)
@@ -40,12 +36,8 @@ public class DungeonBuilder : MonoBehaviour
         {
             foreach (PlannedSocket s in layout.OpenSockets)
             {
-                Vector3 dir = CardinalDirections.ToVector(s.WorldDirection);
-                Quaternion baseRot = dir.sqrMagnitude > 0.001f
-                    ? Quaternion.LookRotation(dir)
-                    : Quaternion.identity;
-                Quaternion rot = baseRot * Quaternion.Euler(0, socketCapYaw, 0);
-                Instantiate(socketCapPrefab, s.WorldPosition, rot, root);
+                GameObject cap = Instantiate(socketCapPrefab, s.WorldPosition, Quaternion.identity, root);
+                OrientBySocket(cap, s.WorldDirection);
             }
         }
 
@@ -69,13 +61,8 @@ public class DungeonBuilder : MonoBehaviour
 
         foreach (PlannedDoorway dw in layout.Doorways)
         {
-            Vector3 dir = CardinalDirections.ToVector(dw.WorldDirection);
-            Quaternion baseRot = dir.sqrMagnitude > 0.001f
-                ? Quaternion.LookRotation(dir)
-                : Quaternion.identity;
-            Quaternion rot = baseRot * Quaternion.Euler(0, doorYaw, 0);
-
-            GameObject go = Instantiate(doorPrefab, dw.WorldPosition, rot, root);
+            GameObject go = Instantiate(doorPrefab, dw.WorldPosition, Quaternion.identity, root);
+            OrientBySocket(go, dw.WorldDirection);
             DoorController door = go.GetComponent<DoorController>();
 
             map.TryGetValue(dw.RoomA, out GameObject ra);
@@ -83,6 +70,36 @@ public class DungeonBuilder : MonoBehaviour
             result.Add(new PlacedDoor { Door = door, RoomA = ra, RoomB = rb });
         }
         return result;
+    }
+
+    /// <summary>
+    /// Rotaciona o objeto recém-instanciado (em rotação identidade) para que o DoorSocket
+    /// interno do prefab aponte para 'worldDir'. Funciona em qualquer rotação de sala,
+    /// pois usa o apontador autorado no próprio prefab. Sem DoorSocket, cai no +Z (LookRotation).
+    /// </summary>
+    private static void OrientBySocket(GameObject instance, CardinalDirection worldDir)
+    {
+        Transform t = instance.transform;
+        Vector3 target = CardinalDirections.ToVector(worldDir);
+        target.y = 0f;
+        if (target.sqrMagnitude < 0.0001f) return;
+
+        DoorSocket socket = instance.GetComponentInChildren<DoorSocket>(true);
+        if (socket == null)
+        {
+            t.rotation = Quaternion.LookRotation(target.normalized);   // fallback: +Z é a frente
+            return;
+        }
+
+        // Direção que o socket aponta no estado atual (identidade), seguindo a convenção do gizmo.
+        Vector3 socketFwd = socket.transform.parent != null
+            ? socket.transform.parent.TransformDirection(CardinalDirections.ToVector(socket.direction))
+            : CardinalDirections.ToVector(socket.direction);
+        socketFwd.y = 0f;
+        if (socketFwd.sqrMagnitude < 0.0001f) return;
+
+        Quaternion delta = Quaternion.FromToRotation(socketFwd.normalized, target.normalized);
+        t.rotation = delta * t.rotation;
     }
 
     public void Clear()
