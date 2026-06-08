@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class BossEnemy : MonoBehaviour
+public class BossEnemy : MonoBehaviour, IDamageable
 {
     [Header("Status")]
     public int maxHealth = 500;

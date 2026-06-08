@@ -24,14 +24,15 @@ public class ProjectileScript : MonoBehaviour
         Debug.Log("[PROJECTILE] Colidiu com: " + other.name);
         if (other.CompareTag("Player")) return;
 
-        EnemyDummy enemy = other.GetComponent<EnemyDummy>();
-        
-        if (enemy == null) enemy = other.GetComponentInParent<EnemyDummy>();
+        IDamageable alvo = other.GetComponent<IDamageable>()
+                        ?? other.GetComponentInParent<IDamageable>();
 
-        if (enemy != null)
+        if (alvo != null)
         {
-            Debug.Log($"[PROJECTILE] Acertou inimigo: {enemy.name} - Dano: {damage}");
-            enemy.TakeDamage(damage);
+            Debug.Log($"[PROJECTILE] Acertou inimigo: {other.name} - Dano: {damage}");
+            alvo.TakeDamage(damage);
+            Destroy(gameObject);
+            return;
         }
 
         if (!other.isTrigger)
