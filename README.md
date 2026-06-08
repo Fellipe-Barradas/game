@@ -4,7 +4,7 @@
 
 ## Download
 
-[**Baixar Build do Jogo**](https://www.mediafire.com/file/l55tn3f8i6t41v7/GameBuild.zip/file)
+[**Baixar Build do Jogo**](https://www.mediafire.com/file/j2mci9adw6745ew/GameBuild%25282%2529.zip/file)
 
 ## Integrantes do grupo
 
