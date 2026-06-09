@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d610634364ecfbc4bb32f1056f41f1c6, type: 3}
+  m_Name: InimigoBoss
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySO
+  displayName: Nivalor
+  prefab: {fileID: 1452403894529505595, guid: 5c4782b43ff22704e92dac84fc27da83, type: 3}
+  weight: 1
+  budgetCost: 0
+  minDepth: 1

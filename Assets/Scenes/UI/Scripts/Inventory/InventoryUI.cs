@@ -39,8 +39,17 @@ public class InventoryUI : MonoBehaviour
 
     private void OnEnable()
     {
+        TryHookInventory();
         if (inventory != null)
             Redraw();
+    }
+
+    private void Update()
+    {
+        // Caso o Player apareça depois do Awake (cenas separadas / spawn por classe),
+        // segue tentando vincular até conseguir.
+        if (inventory == null)
+            TryHookInventory();
     }
 
     private void OnDisable()
@@ -63,14 +72,15 @@ public class InventoryUI : MonoBehaviour
             inventory.OnInventoryChanged += Redraw;
             inventory.OnEquippedChanged += UpdateHotbarOpacity;
             UpdateHotbarOpacity();
+            Redraw();
         }
     }
 
     // --- Drag ---
 
     public void UsarItem(int slotIndex) {
-        // Procura o inventário no Player
-        Inventory inv = GameObject.FindGameObjectWithTag("Player").GetComponent<Inventory>();
+        // Usa o inventário já vinculado (não depende da tag "Player")
+        Inventory inv = inventory != null ? inventory : Object.FindFirstObjectByType<Inventory>();
         if (inv != null) {
             inv.UsarItem(slotIndex);
             // Não precisas de UpdateSlots() aqui, pois o Inventory.cs 

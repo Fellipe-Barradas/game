@@ -6,30 +6,40 @@ public class MoedasHUD : MonoBehaviour
     [SerializeField] private TextMeshProUGUI gold;
     [SerializeField] private TextMeshProUGUI silver;
     [SerializeField] private TextMeshProUGUI fragmentos; // Novo slot para a interface
-    
+
+    private bool conectado = false;
+
     private void OnEnable()
     {
-        if (GerenciadorMoedas.Instancia != null)
-            Conectar();
-        else
-            Invoke(nameof(TentarConectar), 0.1f);
+        TentarConectar();
     }
-    
+
+    private void Update()
+    {
+        // Cenas separadas: o GerenciadorMoedas (MainScene) pode aparecer depois deste HUD
+        // (UIScene). Segue tentando até conseguir, em vez de desistir após um único Invoke.
+        if (!conectado)
+            TentarConectar();
+    }
+
     private void OnDisable()
     {
-        if (GerenciadorMoedas.Instancia != null)
-            GerenciadorMoedas.Instancia.OnRecursosMudaram -= AtualizarTexto; // Nome atualizado
+        if (conectado && GerenciadorMoedas.Instancia != null)
+            GerenciadorMoedas.Instancia.OnRecursosMudaram -= AtualizarTexto;
+        conectado = false;
     }
-    
+
     private void TentarConectar()
     {
-        if (GerenciadorMoedas.Instancia != null) Conectar();
+        if (conectado || GerenciadorMoedas.Instancia == null) return;
+        Conectar();
     }
-    
+
     private void Conectar()
     {
         var g = GerenciadorMoedas.Instancia;
         g.OnRecursosMudaram += AtualizarTexto; // Nome atualizado
+        conectado = true;
         AtualizarTexto(g.MoedasDePrata, g.MoedasDeOuro, g.Fragmentos); // Agora envia os 3
     }
     

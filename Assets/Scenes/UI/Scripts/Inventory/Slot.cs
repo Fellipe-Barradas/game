@@ -47,8 +47,8 @@ public class Slot : MonoBehaviour,
         // Verifica se clicou com o botão esquerdo e se o slot não está vazio
         if (eventData.button == PointerEventData.InputButton.Left && HasItem())
         {
-            // Busca o Inventário no Player e manda usar o item deste slot específico
-            Inventory inv = GameObject.FindGameObjectWithTag("Player").GetComponent<Inventory>();
+            // Busca o Inventário (não depende da tag "Player") e manda usar o item deste slot
+            Inventory inv = Object.FindFirstObjectByType<Inventory>();
             if (inv != null)
             {
                 inv.UsarItem(SlotIndex);

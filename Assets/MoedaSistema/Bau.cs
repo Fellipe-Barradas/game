@@ -34,7 +34,10 @@ public class Bau : MonoBehaviour, IInteractable
         if (dropPrata > 0 || dropOuro > 0 || dropFragmentos > 0)
         {
             Debug.Log($"Baú aberto! Drops: {dropPrata} Prata | {dropOuro} Ouro | {dropFragmentos} Fragmentos");
-            GerenciadorMoedas.Instancia?.AdicionarDrops(dropPrata, dropOuro, dropFragmentos);
+            if (GerenciadorMoedas.Instancia != null)
+                GerenciadorMoedas.Instancia.AdicionarDrops(dropPrata, dropOuro, dropFragmentos);
+            else
+                Debug.LogWarning("[Bau] GerenciadorMoedas.Instancia nulo — drops de moeda perdidos.", this);
         }
 
         if (data.itens != null && data.itens.Count > 0)
@@ -62,7 +65,8 @@ public class Bau : MonoBehaviour, IInteractable
 
     private static Inventory FindPlayerInventory()
     {
-        GameObject p = GameObject.FindGameObjectWithTag("Player");
-        return p != null ? p.GetComponent<Inventory>() : null;
+        // Não depende da tag "Player" (que pode estar em outro objeto da hierarquia).
+        // Mesmo padrão usado por InventoryUI.TryHookInventory.
+        return Object.FindFirstObjectByType<Inventory>();
     }
 }

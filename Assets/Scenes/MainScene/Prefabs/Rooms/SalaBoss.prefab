@@ -16,7 +16,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4950238944770485535
 Transform:
   m_ObjectHideFlags: 0
@@ -39,11 +39,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6605778769044893463}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 47563d64337585743a8d1008e6e86305, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMarker
+  enemyOverride: {fileID: 11400000, guid: 2eef2f0ca90494b439b31830a8e94abd, type: 2}
 --- !u!1 &6632915156447454557
 GameObject:
   m_ObjectHideFlags: 0
