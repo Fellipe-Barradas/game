@@ -23111,7 +23111,7 @@ GameObject:
   - component: {fileID: 1210753468}
   - component: {fileID: 1210753467}
   m_Layer: 7
-  m_Name: Canvas
+  m_Name: CanvasMira
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
