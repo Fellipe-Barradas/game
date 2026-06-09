@@ -16,13 +16,23 @@ public class RoomPopulator : MonoBehaviour
     {
         var spawnedEnemies = new List<GameObject>();
 
-        // Inimigos (qualquer sala com EnemyMarker; orçamento escala com profundidade).
         var enemyMarkers = roomInstance.GetComponentsInChildren<EnemyMarker>(true);
-        if (encounterTable != null && enemyMarkers.Length > 0)
+
+        // 1. Markers com override: spawna SEMPRE o inimigo escolhido (ex.: boss), fora do orçamento.
+        foreach (EnemyMarker m in enemyMarkers)
+        {
+            if (m.enemyOverride == null || m.enemyOverride.prefab == null) continue;
+            GameObject e = Instantiate(m.enemyOverride.prefab, m.transform.position, m.transform.rotation, roomInstance.transform);
+            spawnedEnemies.Add(e);
+        }
+
+        // 2. Markers normais: sorteio por orçamento/profundidade na EncounterTable.
+        if (encounterTable != null)
         {
             int budget = encounterTable.BudgetForDepth(depth);
             foreach (EnemyMarker m in enemyMarkers)
             {
+                if (m.enemyOverride != null) continue; // já tratado acima
                 if (budget <= 0) break;
                 EnemySO pick = encounterTable.Pick(depth, budget, rng);
                 if (pick == null) break;
