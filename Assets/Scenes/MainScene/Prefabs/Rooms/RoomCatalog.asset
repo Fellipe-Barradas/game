@@ -15,7 +15,9 @@ MonoBehaviour:
   rooms:
   - prefab: {fileID: 879399434848056142, guid: 6b8389c58e96a6f40b10a0c004b654c6, type: 3}
     weight: 1
-  - prefab: {fileID: 5512382211491610176, guid: b1568eedca8a907459a809eacc417c2c, type: 3}
+  - prefab: {fileID: 3571316491088328659, guid: 76a1b3f03cfd15544bb0137102691ac8, type: 3}
+    weight: 1
+  - prefab: {fileID: 6589842391931226581, guid: 4c081266fd155364ea28f932c2584ff9, type: 3}
     weight: 1
   - prefab: {fileID: 6483437758827458342, guid: 2b3dc7e04d2d7e447ab68a15627162fc, type: 3}
     weight: 1

@@ -31,7 +31,7 @@ public class GameStateManager : MonoBehaviour
     
     [Header("Classe do Personagem")]
     [Tooltip("Usado só para testes no Editor. Em jogo, a classe vem do GameStateManager.")]
-    public PlayerClass SelectedClass { get; set; } = PlayerClass.Arqueiro;
+    public PlayerClass SelectedClass { get; set; } = PlayerClass.Espadachim;
     public WeaponData SelectedWeapon;
     public bool IsWorldPaused =>
         CurrentState == GameState.Pause     ||
