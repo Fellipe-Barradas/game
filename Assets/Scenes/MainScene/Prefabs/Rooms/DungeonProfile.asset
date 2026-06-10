@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DungeonProfile
   m_EditorClassIdentifier: Assembly-CSharp::DungeonProfile
   minRooms: 2
-  maxRooms: 12
+  maxRooms: 20
   overlapMargin: 0.1
   minBossDepth: 3
   quotas:
@@ -22,10 +22,13 @@ MonoBehaviour:
     max: 1
   - type: 2
     min: 0
-    max: 2
+    max: 3
   - type: 4
     min: 1
-    max: 1
+    max: 2
   - type: 5
     min: 1
     max: 1
+  - type: 1
+    min: 1
+    max: 5

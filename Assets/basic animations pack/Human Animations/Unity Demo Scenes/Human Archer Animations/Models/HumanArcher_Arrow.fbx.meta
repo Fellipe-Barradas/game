@@ -1,7 +1,15 @@
 fileFormatVersion: 2
 guid: 67c079f97b8805149856bf0095a1a841
+AssetOrigin:
+  serializedVersion: 1
+  productId: 335880
+  packageName: Human Archer Animations FREE
+  packageVersion: 1.0
+  assetPath: Assets/basic animations pack/Human Animations/Unity Demo Scenes/Human
+    Archer Animations/Models/HumanArcher_Arrow.fbx
+  uploadId: 825246
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects: {}
   materials:
@@ -30,7 +38,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     extraUserProperties: []
     clipAnimations: []
-    isReadable: 0
+    isReadable: 1
   meshes:
     lODScreenPercentages: []
     globalScale: 1
@@ -56,6 +64,9 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -105,11 +116,3 @@ ModelImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 335880
-  packageName: Human Archer Animations FREE
-  packageVersion: 1.0
-  assetPath: Assets/basic animations pack/Human Animations/Unity Demo Scenes/Human
-    Archer Animations/Models/HumanArcher_Arrow.fbx
-  uploadId: 825246

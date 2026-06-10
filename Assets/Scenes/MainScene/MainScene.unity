@@ -29489,7 +29489,7 @@ MonoBehaviour:
   player: {fileID: 128534704}
   chestTable: {fileID: 11400000, guid: a1f9d1b53fb28984eacdb508bf46f3d9, type: 2}
   useRandomSeed: 1
-  seed: 12345
+  seed: -1795583201
   generateOnStart: 1
 --- !u!4 &1591704485
 Transform:
@@ -33018,7 +33018,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1
+      value: -2.57
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b549692f7f04c6c409ff3e2bf2f5e3a7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -33524,6 +33524,7 @@ MonoBehaviour:
     m_Bits: 128
   attackDamage: 10
   dashForce: 5
+  attackWindup: 0.75
   enemyRenderer: {fileID: 0}
   flashDuration: 0.1
   detectionRange: 10
@@ -36556,8 +36557,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GerenciadorMoedas
   moedasDePrata: 0
-  fragmentos: 0
   moedasDeOuro: 0
+  fragmentos: 0
 --- !u!1 &1895316862 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1050232056786330444, guid: 7a75fdd2ce80e67429969637b32a221f, type: 3}
