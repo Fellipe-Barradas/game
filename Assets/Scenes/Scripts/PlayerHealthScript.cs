@@ -62,6 +62,16 @@ public class PlayerHealth : MonoBehaviour
                 allRenderers[i].material.color = originalColors[i];
     }
 
+    // Morte instantânea por hazard (void, espinhos, killzone).
+    // Ignora bloqueio e i-frames de propósito: cair no void mata mesmo dashando.
+    public void Morrer()
+    {
+        if (currentHealth <= 0) return;
+        currentHealth = 0;
+        GameOverManager.Instance?.AtualizarVidaUI(currentHealth, maxHealth);
+        Die();
+    }
+
     void Die()
     {
         GameStateManager.Instance?.SetState(GameState.GameOver);
