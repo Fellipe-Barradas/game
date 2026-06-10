@@ -7,11 +7,30 @@ public class GerenciadorMoedas : MonoBehaviour
     
     [Header("Sessão Atual (Reseta ao ir pro Menu)")]
     [SerializeField] private int moedasDePrata = 0;
-    [SerializeField] private int fragmentos = 0;
 
     [Header("Persistente (Salvo)")]
-    [SerializeField] private int moedasDeOuro = 0;
-    
+    [SerializeField] private int moedasDeOuro = 0;      // Global, vale para o jogo todo
+    [SerializeField] private int fragmentos = 0;        // Por classe selecionada
+
+    private const string CHAVE_OURO = "MoedasDeOuro";
+    // Fragmentos são salvos por classe (espelha o padrão do WeaponTierManager)
+    private string ChaveFragmentos =>
+        "Fragmentos_" + (GameStateManager.Instance != null
+            ? GameStateManager.Instance.SelectedClass.ToString()
+            : PlayerClass.Espadachim.ToString());
+
+    // Acesso ao ouro salvo sem precisar de instância (usado no menu de seleção de classe).
+    public static int OuroSalvo => PlayerPrefs.GetInt(CHAVE_OURO, 0);
+
+    public static bool GastarOuroSalvo(int quantidade)
+    {
+        int atual = PlayerPrefs.GetInt(CHAVE_OURO, 0);
+        if (quantidade <= 0 || atual < quantidade) return false;
+        PlayerPrefs.SetInt(CHAVE_OURO, atual - quantidade);
+        PlayerPrefs.Save();
+        return true;
+    }
+
     public int MoedasDePrata => moedasDePrata;
     public int MoedasDeOuro => moedasDeOuro;
     public int Fragmentos => fragmentos;
@@ -31,13 +50,13 @@ public class GerenciadorMoedas : MonoBehaviour
 
     private void Start()
     {
-        // Ouro é carregado do disco (PlayerPrefs)
-        moedasDeOuro = PlayerPrefs.GetInt("MoedasDeOuro", 0);
-        
-        // Prata e Fragmentos começam zerados toda vez que a cena carrega
-        moedasDePrata = 0; 
-        fragmentos = 0;
-        
+        // Ouro (global) e Fragmentos (por classe) são carregados do disco
+        moedasDeOuro = PlayerPrefs.GetInt(CHAVE_OURO, 0);
+        fragmentos = PlayerPrefs.GetInt(ChaveFragmentos, 0);
+
+        // Prata começa zerada toda vez que a cena carrega
+        moedasDePrata = 0;
+
         NotificarUI();
     }
 
@@ -47,14 +66,16 @@ public class GerenciadorMoedas : MonoBehaviour
         moedasDePrata += prata;
         moedasDeOuro += ouro;
         fragmentos += qtdFragmentos;
-        
+
+        SalvarProgresso();
         NotificarUI();
     }
-    
+
     public bool GastarOuro(int quantidade)
     {
         if (quantidade <= 0 || moedasDeOuro < quantidade) return false;
         moedasDeOuro -= quantidade;
+        SalvarProgresso();
         NotificarUI();
         return true;
     }
@@ -71,14 +92,16 @@ public class GerenciadorMoedas : MonoBehaviour
     {
         if (quantidade <= 0 || fragmentos < quantidade) return false;
         fragmentos -= quantidade;
+        SalvarProgresso();
         NotificarUI();
         return true;
     }
-    
+
     public void SalvarProgresso()
     {
-        // Apenas o Ouro é gravado no disco
-        PlayerPrefs.SetInt("MoedasDeOuro", moedasDeOuro);
+        // Ouro é global; Fragmentos são por classe
+        PlayerPrefs.SetInt(CHAVE_OURO, moedasDeOuro);
+        PlayerPrefs.SetInt(ChaveFragmentos, fragmentos);
         PlayerPrefs.Save();
     }
     
