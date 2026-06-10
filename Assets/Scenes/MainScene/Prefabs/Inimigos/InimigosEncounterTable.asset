@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EncounterTable
   enemies:
   - {fileID: 11400000, guid: 82898724d0586944eb5c04af977d8c0b, type: 2}
+  - {fileID: 11400000, guid: 7077900704ad1074f805967b8013282c, type: 2}
   baseBudget: 2
   budgetPerDepth: 1
