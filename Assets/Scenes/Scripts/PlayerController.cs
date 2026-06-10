@@ -102,6 +102,20 @@ public class FireKnightController : MonoBehaviour
         rb.interpolation          = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
+        // Material sem atrito no collider: evita o player "grudar" na parede (homem-aranha)
+        // ao empurrar a velocidade horizontal contra ela no ar. O movimento é controlado por
+        // velocidade explícita (MovePlayer), então atrito zero não causa deslize indevido.
+        CapsuleCollider col = GetComponent<CapsuleCollider>();
+        if (col != null)
+        {
+            col.material = new PhysicsMaterial("PlayerNoFriction")
+            {
+                dynamicFriction = 0f,
+                staticFriction  = 0f,
+                frictionCombine = PhysicsMaterialCombine.Minimum
+            };
+        }
+
         if (cameraRig == null)   Debug.LogError("FireKnightController: cameraRig not assigned.",    this);
         if (cameraPivot == null) Debug.LogError("FireKnightController: cameraPivot not assigned.",  this);
         if (groundCheck == null) Debug.LogWarning("FireKnightController: groundCheck not assigned.", this);
@@ -159,7 +173,19 @@ public class FireKnightController : MonoBehaviour
         }
 
         if (groundCheck != null)
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        {
+            // Cast pra BAIXO + checagem de normal, em vez de CheckSphere (omnidirecional).
+            // Na dungeon as PAREDES estão na mesma layer "ground" do chão; com CheckSphere
+            // a esfera nos pés encostava na parede ao subir e marcava isGrounded=true,
+            // liberando pulo infinito. Aqui só conta como chão uma superfície horizontal
+            // logo abaixo dos pés (normal apontando pra cima), ignorando paredes.
+            const float skin = 0.15f;
+            Vector3 origin = groundCheck.position + Vector3.up * skin;
+            isGrounded = Physics.Raycast(origin, Vector3.down, out RaycastHit hit,
+                                         skin + groundDistance, groundMask,
+                                         QueryTriggerInteraction.Ignore)
+                         && hit.normal.y > 0.5f;
+        }
 
         anim.SetBool(HashIsGrounded, isGrounded);
 
@@ -272,11 +298,49 @@ public class FireKnightController : MonoBehaviour
             pendingJump = false;
             isJumping   = true;
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse); //
         }
 
-        if (isDashing) HandleEvasion();
-        else           MovePlayer();
+        // A MUDANÇA É AQUI: Se estiver dando Dash, aplica o Dash. Se não, ANDA NORMAL.
+        if (isDashing) 
+        {
+            HandleEvasion(); //
+        }
+        else 
+        {
+            MovePlayer(); // ESTA ERA A LINHA QUE FALTAVA!
+        }
+    }
+
+    private void Update()
+    {
+        GameStateManager stateManager = GameStateManager.Instance;
+        // Congela as animações e inputs se o jogo estiver pausado ou em menu
+        if (stateManager != null && !stateManager.CanPlayerMove)
+        {
+            moveDirection = Vector3.zero;
+            rawMoveX = rawMoveZ = 0f;
+            isSprinting = false;
+            anim.SetBool(HashIsWalking, false);
+            anim.SetBool(HashIsRunning, false);
+            anim.SetFloat(HashMoveX, 0f);
+            anim.SetFloat(HashMoveZ, 0f);
+            return;
+        }
+
+        GroundCheck();
+
+        var keyboard = Keyboard.current;
+        isSprinting  = keyboard != null && keyboard.leftCtrlKey.isPressed;
+
+        // Leitura de teclado feita no momento correto (Update) evita a perda de inputs
+        ReadMovementInput(keyboard);
+        ApplyYawRotation();
+
+        HandleJump(keyboard);
+        HandleDash(keyboard);
+        UpdateAnimations();
+        UpdateRigWeight(); //
     }
 
     private void MovePlayer()

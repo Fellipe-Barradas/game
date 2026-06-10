@@ -1,12 +1,23 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using TMPro;
 
 public class ClassCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [Header("Identificação")]
     public PlayerClass playerClass;
     public WeaponData classWeapon;
+
+    [Header("Bloqueio / Compra")]
+    public int preco = 100;
+    [SerializeField] private GameObject lockOverlay;   // cadeado / escurecido
+    [SerializeField] private TMP_Text precoLabel;       // texto "N ouro"
+    [SerializeField] private Button comprarButton;      // botão Comprar
+
+    public System.Action<ClassCard> OnComprarClicked;
+    private bool desbloqueada;
+    public bool Desbloqueada => desbloqueada;
 
     [Header("Referências")]
     [SerializeField] private RectTransform cardVisual; // o filho CardVisual que anima
@@ -37,6 +48,12 @@ public class ClassCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         background.color = normalBg;
         if (border != null) border.effectColor = normalBorder;
         if (topAccent != null) topAccent.SetActive(false);
+
+        desbloqueada = ProgressaoClasses.EstaDesbloqueada(playerClass);
+        AtualizarVisualBloqueio();
+
+        if (comprarButton != null)
+            comprarButton.onClick.AddListener(() => OnComprarClicked?.Invoke(this));
     }
 
     void Update()
@@ -83,6 +100,7 @@ public class ClassCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (!desbloqueada) return; // card travado não seleciona; só o botão Comprar age
         OnCardClicked?.Invoke(this);
     }
 
@@ -90,5 +108,22 @@ public class ClassCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     {
         isSelected = selected;
         if (topAccent != null) topAccent.SetActive(selected || isHovered);
+    }
+
+    private void AtualizarVisualBloqueio()
+    {
+        if (lockOverlay != null) lockOverlay.SetActive(!desbloqueada);
+        if (comprarButton != null) comprarButton.gameObject.SetActive(!desbloqueada);
+        if (precoLabel != null)
+        {
+            precoLabel.gameObject.SetActive(!desbloqueada);
+            precoLabel.text = preco + " ouro";
+        }
+    }
+
+    public void MarcarComoDesbloqueada()
+    {
+        desbloqueada = true;
+        AtualizarVisualBloqueio();
     }
 }

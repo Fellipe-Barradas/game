@@ -5,7 +5,7 @@ public class ProjectileScript : MonoBehaviour
     [Header("Configurações do Projétil")]
     public float speed = 20f;
     public float lifeTime = 5f;
-
+    
     [HideInInspector]
     public int damage;
 
@@ -24,15 +24,11 @@ public class ProjectileScript : MonoBehaviour
         Debug.Log("[PROJECTILE] Colidiu com: " + other.name);
         if (other.CompareTag("Player")) return;
 
-        IDamageable alvo = other.GetComponent<IDamageable>()
-                        ?? other.GetComponentInParent<IDamageable>();
-
+        IDamageable alvo = other.GetComponentInParent<IDamageable>();
         if (alvo != null)
         {
-            Debug.Log($"[PROJECTILE] Acertou inimigo: {other.name} - Dano: {damage}");
+            Debug.Log($"[PROJECTILE] Acertou {((Component)alvo).name} - Dano: {damage}");
             alvo.TakeDamage(damage);
-            Destroy(gameObject);
-            return;
         }
 
         if (!other.isTrigger)

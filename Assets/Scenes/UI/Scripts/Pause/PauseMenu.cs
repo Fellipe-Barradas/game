@@ -19,4 +19,11 @@ public class PauseMenu : MonoBehaviour
     {
         GameStateManager.Instance.ReturnToMainMenu();
     }
+
+    // Usado pelo botão "Reiniciar" da tela de morte: recarrega a gameplay
+    // (gera uma nova rodada da dungeon) e volta pro estado Playing.
+    public void RestartGameplay()
+    {
+        GameStateManager.Instance.RestartGameplay();
+    }
 }

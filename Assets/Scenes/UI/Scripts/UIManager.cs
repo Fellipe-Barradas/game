@@ -39,5 +39,8 @@ public class UIManager : MonoBehaviour
         pauseCanvas.SetActive(state == GameState.Pause);
         gameOverCanvas.SetActive(state == GameState.GameOver);
         if (winCanvas != null) winCanvas.SetActive(state == GameState.Victory);
+
+        // Ponto/mira: visível só em Playing (some em pause/inventário/gameover/vitória).
+        CrosshairHUD.Instance?.AplicarEstado(state);
     }
 }

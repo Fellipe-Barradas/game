@@ -27,6 +27,10 @@ public class EnemyDummy : MonoBehaviour, IDamageable
     [Header("Configurações de Ataque")]
     public int attackDamage = 10;
     public float dashForce  = 5f;
+    [Tooltip("Tempo (s) do início da animação até o golpe conectar. Ajuste para casar com o momento do impacto na animação.")]
+    public float attackWindup = 0.75f;
+
+    private Coroutine attackRoutine;
 
     [Header("Feedback Visual")]
     public Renderer enemyRenderer;
@@ -121,7 +125,7 @@ public class EnemyDummy : MonoBehaviour, IDamageable
             player.position.x, transform.position.y, player.position.z));
 
         if (!alreadyAttacked)
-            StartCoroutine(AttackSequence());
+            attackRoutine = StartCoroutine(AttackSequence());
     }
 
     IEnumerator AttackSequence()
@@ -129,23 +133,42 @@ public class EnemyDummy : MonoBehaviour, IDamageable
         alreadyAttacked = true;
         anim.SetTrigger(HashAttack);
 
-        yield return new WaitForSeconds(0.75f);
-        TentarDarDano();
+        yield return new WaitForSeconds(attackWindup);
 
-        Vector3 attackDir = (player.position - transform.position).normalized;
-        float timer = 0f;
-        while (timer < 0.15f)
+        // Só conecta o golpe se o ataque NÃO foi interrompido (por hit/morte)
+        // e o jogador continua no alcance — assim, bater no inimigo cancela o dano dele.
+        if (currentState == EnemyState.Attacking)
         {
-            transform.position += attackDir * dashForce * Time.deltaTime;
-            timer += Time.deltaTime;
-            yield return null;
+            TentarDarDano();
+
+            Vector3 attackDir = (player.position - transform.position).normalized;
+            float timer = 0f;
+            while (timer < 0.15f)
+            {
+                transform.position += attackDir * dashForce * Time.deltaTime;
+                timer += Time.deltaTime;
+                yield return null;
+            }
         }
 
         yield return new WaitForSeconds(attackCooldown);
         alreadyAttacked = false;
+        attackRoutine   = null;
 
         if (currentState != EnemyState.Dead && currentState != EnemyState.HitStun)
             agent.isStopped = false;
+    }
+
+    // Cancela o ataque em andamento: ao tomar dano, o golpe do inimigo é interrompido
+    void InterromperAtaque()
+    {
+        if (attackRoutine != null)
+        {
+            StopCoroutine(attackRoutine);
+            attackRoutine = null;
+        }
+        alreadyAttacked = false;
+        if (anim != null) anim.ResetTrigger(HashAttack);
     }
 
     void TentarDarDano()
@@ -166,6 +189,7 @@ public class EnemyDummy : MonoBehaviour, IDamageable
 
         currentHealth -= damage;
         anim.SetTrigger(HashHitTrigger);
+        InterromperAtaque();
         StartCoroutine(FlashWhite());
 
         if (currentHealth <= 0) Die();

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cc102a8084d8e44f9ee19b57923e05f, type: 3}
+  m_Name: RoomCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::RoomCatalog
+  rooms:
+  - prefab: {fileID: 879399434848056142, guid: 6b8389c58e96a6f40b10a0c004b654c6, type: 3}
+    weight: 1
+  - prefab: {fileID: 3571316491088328659, guid: 76a1b3f03cfd15544bb0137102691ac8, type: 3}
+    weight: 1
+  - prefab: {fileID: 6589842391931226581, guid: 4c081266fd155364ea28f932c2584ff9, type: 3}
+    weight: 1
+  - prefab: {fileID: 6483437758827458342, guid: 2b3dc7e04d2d7e447ab68a15627162fc, type: 3}
+    weight: 1
+  - prefab: {fileID: 7602132774723812403, guid: 26c269f2b7341f94e996e7d0a1a8ea67, type: 3}
+    weight: 1
+  - prefab: {fileID: 2713195645600387320, guid: a9e89456f936b764a94b241dea295b20, type: 3}
+    weight: 1
+  - prefab: {fileID: 4543260828513030379, guid: cb8f4044990568a4bbe3cff724d357ab, type: 3}
+    weight: 1
+  - prefab: {fileID: 2505613820625261261, guid: 1c1e7f18fee68b745891aa3e40485657, type: 3}
+    weight: 1

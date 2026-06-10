@@ -1,7 +1,14 @@
 fileFormatVersion: 2
 guid: 276b4390d133cc74e8c7cc60d8fcd604
+AssetOrigin:
+  serializedVersion: 1
+  productId: 348672
+  packageName: RPG Dungeon Kit DEMO
+  packageVersion: 1.0
+  assetPath: Assets/RPG Dungeon Pack Sample/Meshes/Joint Bottom/joint bottom.fbx
+  uploadId: 829346
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects: {}
   materials:
@@ -30,7 +37,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     extraUserProperties: []
     clipAnimations: []
-    isReadable: 0
+    isReadable: 1
   meshes:
     lODScreenPercentages: []
     globalScale: 1
@@ -56,6 +63,9 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -105,10 +115,3 @@ ModelImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 348672
-  packageName: RPG Dungeon Kit DEMO
-  packageVersion: 1.0
-  assetPath: Assets/RPG Dungeon Pack Sample/Meshes/Joint Bottom/joint bottom.fbx
-  uploadId: 829346

@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
 public class CombatScript : MonoBehaviour
@@ -37,11 +36,7 @@ public class CombatScript : MonoBehaviour
     [SerializeField] private AudioMixerGroup playerAudioGroup;
 
     [Header("Mira e Câmera (Arqueiro)")]
-    public GameObject crosshairUI; // Arraste a UI da mira aqui
     public ThirdPersonCamera camScript; // Arraste a Câmera Principal aqui
-
-    public Image chargeBarFill; // NOVO: A imagem que vai "encher"
-    public CanvasGroup crosshairCanvasGroup; // NOVO: Para fazer a mira aparecer suavemente
 
     [Header("Configuração de Carga do Arco")]
     public float bowChargeDuration = 1.2f;
@@ -62,12 +57,6 @@ public class CombatScript : MonoBehaviour
 
         if (audioSource != null && playerAudioGroup != null)
             audioSource.outputAudioMixerGroup = playerAudioGroup;
-
-        // 1. Esconde a UI da mira por padrão
-        if (crosshairUI != null) crosshairUI.SetActive(false);
-        if (crosshairCanvasGroup != null) crosshairCanvasGroup.alpha = 0f;
-
-        CriarChargeBarSeNecessario();
 
         // 2. PEGA A ARMA DO MENU
         if (GameStateManager.Instance != null && GameStateManager.Instance.SelectedWeapon != null)
@@ -98,34 +87,6 @@ public class CombatScript : MonoBehaviour
             }
         }
     }
-    
-    private void CriarChargeBarSeNecessario()
-    {
-        if (chargeBarFill != null || crosshairUI == null) return;
-
-        // Fundo escuro — filho do crosshairUI para sumir/aparecer junto
-        GameObject fundo = new GameObject("ChargeBar_BG");
-        fundo.transform.SetParent(crosshairUI.transform, false);
-        RectTransform fundoRect = fundo.AddComponent<RectTransform>();
-        fundoRect.anchorMin = new Vector2(0.5f, 0.5f);
-        fundoRect.anchorMax = new Vector2(0.5f, 0.5f);
-        fundoRect.sizeDelta = new Vector2(120f, 12f);
-        fundoRect.anchoredPosition = new Vector2(0f, -50f);
-        Image fundoImg = fundo.AddComponent<Image>();
-        fundoImg.color = new Color(0f, 0f, 0f, 0.6f);
-
-        // Preenchimento amarelo — largura controlada por anchorMax.x (0 = vazio, 1 = cheio)
-        GameObject fill = new GameObject("ChargeBar_Fill");
-        fill.transform.SetParent(fundo.transform, false);
-        RectTransform fillRect = fill.AddComponent<RectTransform>();
-        fillRect.anchorMin = new Vector2(0f, 0f);
-        fillRect.anchorMax = new Vector2(0f, 1f); // começa com largura 0
-        fillRect.offsetMin = Vector2.zero;
-        fillRect.offsetMax = Vector2.zero;
-        chargeBarFill = fill.AddComponent<Image>();
-        chargeBarFill.color = new Color(1f, 0.85f, 0f);
-    }
-
     private void Update()
     {
         GameStateManager stateManager = GameStateManager.Instance;
@@ -167,10 +128,8 @@ public class CombatScript : MonoBehaviour
             currentChargeTime = 0f; // Começa a carga do zero
             controller.SetAiming(true);
 
-            if (crosshairUI != null) crosshairUI.SetActive(true);
-            if (crosshairCanvasGroup != null) crosshairCanvasGroup.alpha = 1f;
-            if (chargeBarFill != null) chargeBarFill.rectTransform.anchorMax = new Vector2(0f, 1f);
-            
+            CrosshairHUD.Instance?.MostrarMira();
+
             if (camScript != null) camScript.SetAimingCamera(true);
 
             if (audioSource != null && currentWeapon?.swingSound != null)
@@ -182,11 +141,7 @@ public class CombatScript : MonoBehaviour
         {
             currentChargeTime += Time.deltaTime;
 
-            if (chargeBarFill != null)
-            {
-                float t = Mathf.Clamp01(currentChargeTime / bowChargeDuration);
-                chargeBarFill.rectTransform.anchorMax = new Vector2(t, 1f);
-            }
+            CrosshairHUD.Instance?.SetCarga(currentChargeTime / bowChargeDuration);
         }
 
         // 3. SOLTA O BOTÃO (Momento de decisão)
@@ -225,9 +180,9 @@ public class CombatScript : MonoBehaviour
         controller.SetAiming(false);
 
         // Esconde UI e Zoom
-        if (crosshairUI != null) crosshairUI.SetActive(false);
+        CrosshairHUD.Instance?.EsconderMira();
         if (camScript != null) camScript.SetAimingCamera(false);
-        
+
         float rate = currentWeapon != null ? currentWeapon.attackRate : 1f;
         float animDuration = 1f / rate;
         
@@ -243,7 +198,7 @@ public class CombatScript : MonoBehaviour
         controller.SetAiming(false);
         
         // Esconde UI e Zoom
-        if (crosshairUI != null) crosshairUI.SetActive(false);
+        CrosshairHUD.Instance?.EsconderMira();
         if (camScript != null) camScript.SetAimingCamera(false);
     }
 
@@ -286,16 +241,18 @@ public class CombatScript : MonoBehaviour
 
         foreach (Collider enemy in hits)
         {
+            IDamageable alvo = enemy.GetComponentInParent<IDamageable>();
+            if (alvo == null) continue;
+
             Debug.Log($"[HIT] Inimigo atingido: {enemy.name} - Dano: {damage}");
-            
+
             if (audioSource != null && currentWeapon?.hitSound != null)
                 audioSource.PlayOneShot(currentWeapon.hitSound);
 
             if (hitSparks != null)
                 Instantiate(hitSparks, enemy.ClosestPoint(transform.position), Quaternion.identity);
 
-            IDamageable alvo = enemy.GetComponent<IDamageable>();
-            alvo?.TakeDamage(damage);
+            alvo.TakeDamage(damage);
         }
     }
 
