@@ -4,7 +4,7 @@
 
 ## Download
 
-[**Baixar Build do Jogo**](https://www.mediafire.com/file/j2mci9adw6745ew/GameBuild%25282%2529.zip/file)
+[**Baixar Build do Jogo**](https://drive.google.com/file/d/1z2CUiYMR0-oRQMvmZxBaE3VkfIRSqnmJ/view?usp=sharing)
 
 ## Integrantes do grupo
 
@@ -13,3 +13,4 @@
 - Luis Fellipe Bezerra Barradas
 - Gláucio de Sousa Monteiro
 - Guilherme Cruz Soares
+- Yuri Ribeiro Estrela
